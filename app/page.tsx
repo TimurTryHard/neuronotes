@@ -468,10 +468,10 @@ export default function NotesApp() {
 
   return (
       <div
-          className={`min-h-screen ${
+          className={`min-h-screen transition ${
               theme === "dark"
                   ? "bg-[#070b18] text-white"
-                  : "bg-[#f4f7fb] text-slate-900"
+                  : "bg-white text-black invert"
           }`}
       >
         <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[280px_420px_1fr]">
@@ -498,10 +498,10 @@ export default function NotesApp() {
               Выйти
             </button>
             <button
-                onClick={() => alert("Кнопка работает")}
+                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 className="mb-8 w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-white/70"
             >
-              ☀️ Светлая тема
+              {theme === "dark" ? "☀️ Светлая тема" : "🌙 Тёмная тема"}
             </button>
 
             <p className="mb-3 text-sm text-white/35">Фильтры</p>
