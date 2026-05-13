@@ -1,5 +1,5 @@
 "use client";
-
+import type { Metadata } from "next";
 import type React from "react";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
