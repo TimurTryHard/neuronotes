@@ -173,6 +173,7 @@ export default function NotesApp() {
   const [filter, setFilter] = useState("Все");
   const [folderFilter, setFolderFilter] = useState("Все папки");
   const [loading, setLoading] = useState(false);
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">(
       "saved"
   );
@@ -347,8 +348,7 @@ export default function NotesApp() {
       return;
     }
 
-    const {
-      data: { publicUrl },
+    const {data: { publicUrl },
     } = supabase.storage.from("note-images").getPublicUrl(fileName);
 
     const { error } = await supabase
@@ -467,7 +467,13 @@ export default function NotesApp() {
   if (!user) return <AuthScreen />;
 
   return (
-      <div className="min-h-screen bg-[#070b18] text-white">
+      <div
+          className={`min-h-screen ${
+              theme === "dark"
+                  ? "bg-[#070b18] text-white"
+                  : "bg-[#f4f7fb] text-slate-900"
+          }`}
+      >
         <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[280px_420px_1fr]">
           <aside className="border-r border-white/10 bg-white/[0.03] p-6">
             <div className="mb-10 flex items-center gap-3">
@@ -490,6 +496,12 @@ export default function NotesApp() {
                 className="mb-8 w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-white/70"
             >
               Выйти
+            </button>
+            <button
+                onClick={() => alert("Кнопка работает")}
+                className="mb-8 w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-white/70"
+            >
+              ☀️ Светлая тема
             </button>
 
             <p className="mb-3 text-sm text-white/35">Фильтры</p>
