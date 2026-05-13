@@ -471,11 +471,17 @@ export default function NotesApp() {
           className={`min-h-screen transition ${
               theme === "dark"
                   ? "bg-[#070b18] text-white"
-                  : "bg-white text-black invert"
+                  : "bg-slate-100 text-slate-950"
           }`}
       >
         <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[280px_420px_1fr]">
-          <aside className="border-r border-white/10 bg-white/[0.03] p-6">
+          <aside
+              className={`border-r p-6 ${
+                  theme === "dark"
+                      ? "border-white/10 bg-white/[0.03]"
+                      : "border-slate-200 bg-white"
+              }`}
+          >
             <div className="mb-10 flex items-center gap-3">
               <LogoIcon />
               <div>
@@ -499,7 +505,11 @@ export default function NotesApp() {
             </button>
             <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="mb-8 w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-white/70"
+                className={`mb-8 w-full rounded-2xl border px-5 py-3 ${
+                    theme === "dark"
+                        ? "border-white/10 bg-white/5 text-white/70"
+                        : "border-slate-300 bg-slate-100 text-slate-800"
+                }`}
             >
               {theme === "dark" ? "☀️ Светлая тема" : "🌙 Тёмная тема"}
             </button>
@@ -533,7 +543,13 @@ export default function NotesApp() {
             </div>
           </aside>
 
-          <section className="border-r border-white/10 bg-black/20 p-6">
+          <section
+              className={`border-r p-6 ${
+                  theme === "dark"
+                      ? "border-white/10 bg-black/20"
+                      : "border-slate-200 bg-slate-50"
+              }`}
+          >
             <h2 className="mb-4 text-3xl font-black">Мои заметки</h2>
 
             <input
