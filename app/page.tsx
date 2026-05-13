@@ -276,12 +276,15 @@ export default function NotesApp() {
       text: "Начни писать здесь...",
       tag: "Без тега",
       folder: "Личное",
-      date: "Сейчас",
+      date: new Date().toLocaleDateString("ru-RU", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }),
       favorite: false,
       archived: false,
       color: "default",
       pinned: false,
-      image_url: null,
     };
 
     const { data, error } = await supabase
