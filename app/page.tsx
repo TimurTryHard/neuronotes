@@ -1,5 +1,5 @@
 "use client";
-import type { Metadata } from "next";
+
 import type React from "react";
 import type { ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -10,6 +10,7 @@ const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+type Theme = "dark" | "light";
 type NoteColor = "default" | "cyan" | "violet" | "pink" | "green" | "orange";
 
 type Note = {
@@ -27,15 +28,6 @@ type Note = {
   image_url: string | null;
 };
 
-const colorClasses: Record<NoteColor, string> = {
-  default: "border-white/10 bg-white/[0.04]",
-  cyan: "border-cyan-400/40 bg-cyan-400/10",
-  violet: "border-violet-400/40 bg-violet-400/10",
-  pink: "border-pink-400/40 bg-pink-400/10",
-  green: "border-emerald-400/40 bg-emerald-400/10",
-  orange: "border-orange-400/40 bg-orange-400/10",
-};
-
 const colorLabels: { value: NoteColor; label: string }[] = [
   { value: "default", label: "Обычный" },
   { value: "cyan", label: "Голубой" },
@@ -44,6 +36,32 @@ const colorLabels: { value: NoteColor; label: string }[] = [
   { value: "green", label: "Зелёный" },
   { value: "orange", label: "Оранжевый" },
 ];
+
+function getNoteColorClasses(color: NoteColor, theme: Theme) {
+  if (theme === "light") {
+    const lightColors: Record<NoteColor, string> = {
+      default: "border-slate-200 bg-white",
+      cyan: "border-cyan-200 bg-cyan-50",
+      violet: "border-violet-200 bg-violet-50",
+      pink: "border-pink-200 bg-pink-50",
+      green: "border-emerald-200 bg-emerald-50",
+      orange: "border-orange-200 bg-orange-50",
+    };
+
+    return lightColors[color];
+  }
+
+  const darkColors: Record<NoteColor, string> = {
+    default: "border-white/10 bg-white/[0.04]",
+    cyan: "border-cyan-400/40 bg-cyan-400/10",
+    violet: "border-violet-400/40 bg-violet-400/10",
+    pink: "border-pink-400/40 bg-pink-400/10",
+    green: "border-emerald-400/40 bg-emerald-400/10",
+    orange: "border-orange-400/40 bg-orange-400/10",
+  };
+
+  return darkColors[color];
+}
 
 function LogoIcon() {
   return (
@@ -57,18 +75,24 @@ function SidebarButton({
                          active,
                          children,
                          onClick,
+                         theme,
                        }: {
   active: boolean;
   children: ReactNode;
   onClick: () => void;
+  theme: Theme;
 }) {
   return (
       <button
           onClick={onClick}
           className={`w-full rounded-2xl px-4 py-3 text-left transition ${
               active
-                  ? "bg-white text-black"
-                  : "text-white/65 hover:bg-white/10 hover:text-white"
+                  ? theme === "dark"
+                      ? "bg-white text-black"
+                      : "bg-slate-900 text-white"
+                  : theme === "dark"
+                      ? "text-white/65 hover:bg-white/10 hover:text-white"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
           }`}
       >
         {children}
@@ -100,6 +124,7 @@ function AuthScreen() {
           <section>
             <div className="mb-8 flex items-center gap-4">
               <LogoIcon />
+
               <div>
                 <h1 className="text-2xl font-black">NeuroNotes</h1>
                 <p className="text-white/45">Сервис для хранения заметок</p>
@@ -173,7 +198,8 @@ export default function NotesApp() {
   const [filter, setFilter] = useState("Все");
   const [folderFilter, setFolderFilter] = useState("Все папки");
   const [loading, setLoading] = useState(false);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [theme, setTheme] = useState<Theme>("dark");
+  const [quickMenuOpen, setQuickMenuOpen] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">(
       "saved"
   );
@@ -196,7 +222,7 @@ export default function NotesApp() {
       return;
     }
 
-    setNotes(data || []);
+    setNotes((data || []) as Note[]);
     setSelectedId(data?.[0]?.id || null);
     setLoading(false);
   }, []);
@@ -247,6 +273,7 @@ export default function NotesApp() {
           const q = search.toLowerCase();
 
           const matchesSearch =
+              !q ||
               note.title?.toLowerCase().includes(q) ||
               note.text?.toLowerCase().includes(q) ||
               note.tag?.toLowerCase().includes(q) ||
@@ -257,6 +284,7 @@ export default function NotesApp() {
               (filter === "Закреплённые" && note.pinned) ||
               (filter === "Избранное" && note.favorite) ||
               (filter === "Архив" && note.archived) ||
+              (filter === "Без тега" && note.tag === "Без тега") ||
               note.tag === filter;
 
           const matchesFolder =
@@ -268,15 +296,24 @@ export default function NotesApp() {
         .sort((a, b) => Number(b.pinned) - Number(a.pinned));
   }, [notes, search, filter, folderFilter]);
 
-  async function createNote() {
+  async function createNote(
+      options: {
+        title?: string;
+        text?: string;
+        tag?: string;
+        folder?: string;
+        pinned?: boolean;
+        color?: NoteColor;
+      } = {}
+  ) {
     if (!user) return;
 
     const newNote = {
       user_id: user.id,
-      title: "Новая заметка",
-      text: "Начни писать здесь...",
-      tag: "Без тега",
-      folder: "Личное",
+      title: options.title || "Новая заметка",
+      text: options.text || "Начни писать здесь...",
+      tag: options.tag || "Без тега",
+      folder: options.folder || "Личное",
       date: new Date().toLocaleDateString("ru-RU", {
         day: "2-digit",
         month: "long",
@@ -284,8 +321,9 @@ export default function NotesApp() {
       }),
       favorite: false,
       archived: false,
-      color: "default",
-      pinned: false,
+      color: options.color || "default",
+      pinned: options.pinned || false,
+      image_url: null,
     };
 
     const { data, error } = await supabase
@@ -299,8 +337,9 @@ export default function NotesApp() {
       return;
     }
 
-    setNotes([data, ...notes]);
-    setSelectedId(data.id);
+    setNotes((prev) => [data as Note, ...prev]);
+    setSelectedId((data as Note).id);
+    setQuickMenuOpen(false);
   }
 
   function updateSelected(
@@ -309,11 +348,13 @@ export default function NotesApp() {
   ) {
     if (!selectedNote) return;
 
+    const noteId = selectedNote.id;
+
     setSaveStatus("saving");
 
-    setNotes(
-        notes.map((note) =>
-            note.id === selectedNote.id ? { ...note, [field]: value } : note
+    setNotes((prev) =>
+        prev.map((note) =>
+            note.id === noteId ? ({ ...note, [field]: value } as Note) : note
         )
     );
 
@@ -325,17 +366,17 @@ export default function NotesApp() {
       const { error } = await supabase
           .from("notes")
           .update({ [field]: value })
-          .eq("id", selectedNote.id);
+          .eq("id", noteId);
 
       setSaveStatus(error ? "error" : "saved");
     }, 700);
   }
 
   async function uploadImage(file: File) {
-    if (!selectedNote) return;
+    if (!selectedNote || !user) return;
 
     const fileExt = file.name.split(".").pop();
-    const fileName = `${user?.id}/${Date.now()}.${fileExt}`;
+    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
 
     const { error: uploadError } = await supabase.storage
         .from("note-images")
@@ -348,7 +389,8 @@ export default function NotesApp() {
       return;
     }
 
-    const {data: { publicUrl },
+    const {
+      data: { publicUrl },
     } = supabase.storage.from("note-images").getPublicUrl(fileName);
 
     const { error } = await supabase
@@ -374,14 +416,13 @@ export default function NotesApp() {
     const current = notes.find((note) => note.id === id);
     if (!current) return;
 
-    await supabase
-        .from("notes")
-        .update({ favorite: !current.favorite })
-        .eq("id", id);
+    const nextValue = !current.favorite;
 
-    setNotes(
-        notes.map((note) =>
-            note.id === id ? { ...note, favorite: !note.favorite } : note
+    await supabase.from("notes").update({ favorite: nextValue }).eq("id", id);
+
+    setNotes((prev) =>
+        prev.map((note) =>
+            note.id === id ? { ...note, favorite: nextValue } : note
         )
     );
   }
@@ -390,14 +431,13 @@ export default function NotesApp() {
     const current = notes.find((note) => note.id === id);
     if (!current) return;
 
-    await supabase
-        .from("notes")
-        .update({ archived: !current.archived })
-        .eq("id", id);
+    const nextValue = !current.archived;
 
-    setNotes(
-        notes.map((note) =>
-            note.id === id ? { ...note, archived: !note.archived } : note
+    await supabase.from("notes").update({ archived: nextValue }).eq("id", id);
+
+    setNotes((prev) =>
+        prev.map((note) =>
+            note.id === id ? { ...note, archived: nextValue } : note
         )
     );
   }
@@ -406,15 +446,14 @@ export default function NotesApp() {
     const current = notes.find((note) => note.id === id);
     if (!current) return;
 
-    await supabase
-        .from("notes")
-        .update({ pinned: !current.pinned })
-        .eq("id", id);
+    const nextValue = !current.pinned;
 
-    setNotes(
-        notes
+    await supabase.from("notes").update({ pinned: nextValue }).eq("id", id);
+
+    setNotes((prev) =>
+        prev
             .map((note) =>
-                note.id === id ? { ...note, pinned: !note.pinned } : note
+                note.id === id ? { ...note, pinned: nextValue } : note
             )
             .sort((a, b) => Number(b.pinned) - Number(a.pinned))
     );
@@ -422,6 +461,9 @@ export default function NotesApp() {
 
   async function deleteSelected() {
     if (!selectedNote) return;
+
+    const confirmDelete = confirm("Удалить выбранную заметку?");
+    if (!confirmDelete) return;
 
     await supabase.from("notes").delete().eq("id", selectedNote.id);
 
@@ -468,10 +510,10 @@ export default function NotesApp() {
 
   return (
       <div
-          className={`min-h-screen transition ${
+          className={`min-h-screen ${
               theme === "dark"
                   ? "bg-[#070b18] text-white"
-                  : "bg-slate-100 text-slate-950"
+                  : "bg-[#f4f7fb] text-slate-900"
           }`}
       >
         <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[280px_420px_1fr]">
@@ -482,39 +524,50 @@ export default function NotesApp() {
                       : "border-slate-200 bg-white"
               }`}
           >
-            <div className="mb-10 flex items-center gap-3">
+            <div className="mb-8 flex items-center gap-3">
               <LogoIcon />
+
               <div>
                 <h1 className="text-xl font-black">NeuroNotes</h1>
-                <p className="text-sm text-white/45">{user.email}</p>
+                <p
+                    className={`text-sm ${
+                        theme === "dark" ? "text-white/45" : "text-slate-500"
+                    }`}
+                >
+                  {user.email}
+                </p>
               </div>
             </div>
 
             <button
-                onClick={createNote}
-                className="mb-4 w-full rounded-2xl bg-gradient-to-r from-cyan-400 to-violet-500 px-5 py-4 font-bold text-black"
-            >
-              ＋ Новая заметка
-            </button>
-
-            <button
                 onClick={logout}
-                className="mb-8 w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-white/70"
+                className={`mb-4 w-full rounded-2xl border px-5 py-3 transition ${
+                    theme === "dark"
+                        ? "border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                        : "border-slate-300 bg-white text-slate-800 hover:bg-slate-100"
+                }`}
             >
               Выйти
             </button>
+
             <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className={`mb-8 w-full rounded-2xl border px-5 py-3 ${
+                className={`mb-8 w-full rounded-2xl border px-5 py-3 transition ${
                     theme === "dark"
-                        ? "border-white/10 bg-white/5 text-white/70"
-                        : "border-slate-300 bg-slate-100 text-slate-800"
+                        ? "border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                        : "border-slate-300 bg-white text-slate-800 hover:bg-slate-100"
                 }`}
             >
               {theme === "dark" ? "☀️ Светлая тема" : "🌙 Тёмная тема"}
             </button>
 
-            <p className="mb-3 text-sm text-white/35">Фильтры</p>
+            <p
+                className={`mb-3 text-sm ${
+                    theme === "dark" ? "text-white/35" : "text-slate-400"
+                }`}
+            >
+              Фильтры
+            </p>
 
             <div className="mb-8 space-y-2">
               {filters.map((item) => (
@@ -522,13 +575,20 @@ export default function NotesApp() {
                       key={item}
                       active={filter === item}
                       onClick={() => setFilter(item)}
+                      theme={theme}
                   >
                     {item}
                   </SidebarButton>
               ))}
             </div>
 
-            <p className="mb-3 text-sm text-white/35">Папки</p>
+            <p
+                className={`mb-3 text-sm ${
+                    theme === "dark" ? "text-white/35" : "text-slate-400"
+                }`}
+            >
+              Папки
+            </p>
 
             <div className="space-y-2">
               {folders.map((folder) => (
@@ -536,6 +596,7 @@ export default function NotesApp() {
                       key={folder}
                       active={folderFilter === folder}
                       onClick={() => setFolderFilter(folder)}
+                      theme={theme}
                   >
                     📁 {folder}
                   </SidebarButton>
@@ -556,12 +617,18 @@ export default function NotesApp() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Поиск заметок..."
-                className="mb-6 w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 outline-none"
+                className={`mb-6 w-full rounded-2xl border px-4 py-3 outline-none ${
+                    theme === "dark"
+                        ? "border-white/10 bg-white/5 text-white placeholder:text-white/35"
+                        : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
+                }`}
             />
 
             {loading ? (
-                <p className="text-white/45">Загрузка...</p>
-            ) : (
+                <p className={theme === "dark" ? "text-white/45" : "text-slate-500"}>
+                  Загрузка...
+                </p>
+            ) : visibleNotes.length > 0 ? (
                 <div className="space-y-4">
                   {visibleNotes.map((note) => {
                     const noteColor = note.color || "default";
@@ -572,8 +639,10 @@ export default function NotesApp() {
                             onClick={() => setSelectedId(note.id)}
                             className={`w-full rounded-3xl border p-5 text-left transition ${
                                 selectedId === note.id
-                                    ? "border-cyan-400/70 bg-cyan-400/15"
-                                    : colorClasses[noteColor]
+                                    ? theme === "dark"
+                                        ? "border-cyan-400/70 bg-cyan-400/15"
+                                        : "border-cyan-400 bg-cyan-50"
+                                    : getNoteColorClasses(noteColor, theme)
                             }`}
                         >
                           <div className="mb-3 flex justify-between gap-3">
@@ -583,7 +652,7 @@ export default function NotesApp() {
                             </h3>
 
                             {note.favorite && (
-                                <span className="text-yellow-300">★</span>
+                                <span className="text-yellow-400">★</span>
                             )}
                           </div>
 
@@ -595,11 +664,19 @@ export default function NotesApp() {
                               />
                           )}
 
-                          <p className="mb-4 line-clamp-2 text-sm text-white/55">
+                          <p
+                              className={`mb-4 line-clamp-2 text-sm ${
+                                  theme === "dark" ? "text-white/55" : "text-slate-500"
+                              }`}
+                          >
                             {note.text || "Пустая заметка"}
                           </p>
 
-                          <div className="flex justify-between text-xs text-white/40">
+                          <div
+                              className={`flex justify-between text-xs ${
+                                  theme === "dark" ? "text-white/40" : "text-slate-400"
+                              }`}
+                          >
                             <span>📁 {note.folder || "Личное"}</span>
                             <span>{note.date || "Без даты"}</span>
                           </div>
@@ -607,14 +684,28 @@ export default function NotesApp() {
                     );
                   })}
                 </div>
+            ) : (
+                <div
+                    className={`flex min-h-[300px] items-center justify-center rounded-3xl border border-dashed ${
+                        theme === "dark"
+                            ? "border-white/10 text-white/40"
+                            : "border-slate-300 text-slate-400"
+                    }`}
+                >
+                  Создай первую заметку
+                </div>
             )}
           </section>
 
           <section className="p-6 lg:p-10">
             {selectedNote ? (
                 <div className="mx-auto max-w-4xl">
-                  <div className="mb-6 flex justify-between gap-4">
-                    <div className="text-white/45">
+                  <div className="mb-6 flex flex-col justify-between gap-4 lg:flex-row">
+                    <div
+                        className={
+                          theme === "dark" ? "text-white/45" : "text-slate-500"
+                        }
+                    >
                       📁 {selectedNote.folder || "Личное"} · 🏷{" "}
                       {selectedNote.tag || "Без тега"}
 
@@ -628,28 +719,40 @@ export default function NotesApp() {
                     <div className="flex gap-3">
                       <button
                           onClick={() => togglePinned(selectedNote.id)}
-                          className="rounded-2xl bg-white/5 p-3"
+                          className={`rounded-2xl p-3 transition ${
+                              theme === "dark"
+                                  ? "bg-white/5 hover:bg-white/10"
+                                  : "bg-white shadow-sm hover:bg-slate-100"
+                          }`}
                       >
                         📌
                       </button>
 
                       <button
                           onClick={() => toggleFavorite(selectedNote.id)}
-                          className="rounded-2xl bg-white/5 p-3"
+                          className={`rounded-2xl p-3 transition ${
+                              theme === "dark"
+                                  ? "bg-white/5 hover:bg-white/10"
+                                  : "bg-white shadow-sm hover:bg-slate-100"
+                          }`}
                       >
                         ★
                       </button>
 
                       <button
                           onClick={() => toggleArchive(selectedNote.id)}
-                          className="rounded-2xl bg-white/5 p-3"
+                          className={`rounded-2xl p-3 transition ${
+                              theme === "dark"
+                                  ? "bg-white/5 hover:bg-white/10"
+                                  : "bg-white shadow-sm hover:bg-slate-100"
+                          }`}
                       >
                         📦
                       </button>
 
                       <button
                           onClick={deleteSelected}
-                          className="rounded-2xl bg-red-400/10 p-3 text-red-300"
+                          className="rounded-2xl bg-red-400/10 p-3 text-red-400 transition hover:bg-red-400/20"
                       >
                         🗑
                       </button>
@@ -658,14 +761,18 @@ export default function NotesApp() {
 
                   <div
                       className={`rounded-[32px] border p-6 lg:p-10 ${
-                          colorClasses[selectedNote.color || "default"]
+                          getNoteColorClasses(selectedNote.color || "default", theme)
                       }`}
                   >
                     <input
                         value={selectedNote.title || ""}
                         onChange={(e) => updateSelected("title", e.target.value)}
                         placeholder="Название заметки"
-                        className="mb-6 w-full bg-transparent text-4xl font-black outline-none placeholder:text-white/25"
+                        className={`mb-6 w-full bg-transparent text-4xl font-black outline-none ${
+                            theme === "dark"
+                                ? "placeholder:text-white/25"
+                                : "placeholder:text-slate-300"
+                        }`}
                     />
 
                     <div className="mb-6 grid gap-4 md:grid-cols-4">
@@ -673,27 +780,43 @@ export default function NotesApp() {
                           value={selectedNote.folder || ""}
                           onChange={(e) => updateSelected("folder", e.target.value)}
                           placeholder="Папка"
-                          className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 outline-none"
+                          className={`rounded-2xl border px-4 py-3 outline-none ${
+                              theme === "dark"
+                                  ? "border-white/10 bg-black/20 text-white placeholder:text-white/30"
+                                  : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
+                          }`}
                       />
 
                       <input
                           value={selectedNote.tag || ""}
                           onChange={(e) => updateSelected("tag", e.target.value)}
                           placeholder="Тег"
-                          className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 outline-none"
+                          className={`rounded-2xl border px-4 py-3 outline-none ${
+                              theme === "dark"
+                                  ? "border-white/10 bg-black/20 text-white placeholder:text-white/30"
+                                  : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
+                          }`}
                       />
 
                       <input
                           value={selectedNote.date || ""}
                           onChange={(e) => updateSelected("date", e.target.value)}
                           placeholder="Дата"
-                          className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 outline-none"
+                          className={`rounded-2xl border px-4 py-3 outline-none ${
+                              theme === "dark"
+                                  ? "border-white/10 bg-black/20 text-white placeholder:text-white/30"
+                                  : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
+                          }`}
                       />
 
                       <select
                           value={selectedNote.color || "default"}
                           onChange={(e) => updateSelected("color", e.target.value)}
-                          className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 outline-none"
+                          className={`rounded-2xl border px-4 py-3 outline-none ${
+                              theme === "dark"
+                                  ? "border-white/10 bg-black/20 text-white"
+                                  : "border-slate-200 bg-white text-slate-900"
+                          }`}
                       >
                         {colorLabels.map((color) => (
                             <option key={color.value} value={color.value}>
@@ -707,11 +830,21 @@ export default function NotesApp() {
                         value={selectedNote.text || ""}
                         onChange={(e) => updateSelected("text", e.target.value)}
                         placeholder="Напиши заметку..."
-                        className="min-h-[320px] w-full resize-none rounded-3xl border border-white/10 bg-black/20 p-5 text-lg outline-none placeholder:text-white/25"
+                        className={`min-h-[320px] w-full resize-none rounded-3xl border p-5 text-lg outline-none ${
+                            theme === "dark"
+                                ? "border-white/10 bg-black/20 text-white placeholder:text-white/25"
+                                : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
+                        }`}
                     />
 
                     <div className="mt-4 flex flex-wrap items-center gap-3">
-                      <label className="cursor-pointer rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm text-white/80 hover:bg-white/10">
+                      <label
+                          className={`cursor-pointer rounded-2xl border px-5 py-3 text-sm transition ${
+                              theme === "dark"
+                                  ? "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                          }`}
+                      >
                         🖼 Загрузить изображение
                         <input
                             type="file"
@@ -727,7 +860,7 @@ export default function NotesApp() {
                       {selectedNote.image_url && (
                           <button
                               onClick={removeImage}
-                              className="rounded-2xl border border-red-400/20 bg-red-400/10 px-5 py-3 text-sm text-red-300"
+                              className="rounded-2xl border border-red-400/20 bg-red-400/10 px-5 py-3 text-sm text-red-400"
                           >
                             Удалить изображение
                           </button>
@@ -744,12 +877,79 @@ export default function NotesApp() {
                   </div>
                 </div>
             ) : (
-                <div className="flex h-full items-center justify-center text-white/50">
+                <div
+                    className={`flex h-full items-center justify-center ${
+                        theme === "dark" ? "text-white/50" : "text-slate-400"
+                    }`}
+                >
                   Создай первую заметку
                 </div>
             )}
           </section>
         </main>
+
+        <div className="fixed bottom-6 right-6 z-50">
+          {quickMenuOpen && (
+              <div className="mb-4 flex flex-col items-end gap-3">
+                <button
+                    onClick={() =>
+                        createNote({
+                          title: "Новая заметка",
+                          text: "Начни писать здесь...",
+                        })
+                    }
+                    className={`rounded-2xl px-4 py-3 text-sm font-bold shadow-lg transition ${
+                        theme === "dark"
+                            ? "bg-white text-slate-900 hover:bg-white/90"
+                            : "bg-slate-900 text-white hover:bg-slate-800"
+                    }`}
+                >
+                  Текстовая заметка
+                </button>
+
+                <button
+                    onClick={() =>
+                        createNote({
+                          title: "Важная заметка",
+                          pinned: true,
+                        })
+                    }
+                    className={`rounded-2xl px-4 py-3 text-sm font-bold shadow-lg transition ${
+                        theme === "dark"
+                            ? "bg-white text-slate-900 hover:bg-white/90"
+                            : "bg-slate-900 text-white hover:bg-slate-800"
+                    }`}
+                >
+                  Закреплённая заметка
+                </button>
+
+                <button
+                    onClick={() =>
+                        createNote({
+                          title: "Проектная заметка",
+                          tag: "Проекты",
+                          folder: "Проекты",
+                          color: "violet",
+                        })
+                    }
+                    className={`rounded-2xl px-4 py-3 text-sm font-bold shadow-lg transition ${
+                        theme === "dark"
+                            ? "bg-white text-slate-900 hover:bg-white/90"
+                            : "bg-slate-900 text-white hover:bg-slate-800"
+                    }`}
+                >
+                  Проектная заметка
+                </button>
+              </div>
+          )}
+
+          <button
+              onClick={() => setQuickMenuOpen(!quickMenuOpen)}
+              className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-violet-500 to-pink-500 text-3xl font-black text-white shadow-[0_0_35px_rgba(139,92,246,0.55)] transition hover:scale-105"
+          >
+            {quickMenuOpen ? "×" : "+"}
+          </button>
+        </div>
       </div>
   );
 }
