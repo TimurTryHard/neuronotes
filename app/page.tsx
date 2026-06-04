@@ -828,6 +828,11 @@ export default function NotesApp() {
 
                     <textarea
                         value={selectedNote.text || ""}
+                        onFocus={() => {
+                          if (selectedNote.text === "") {
+                            updateSelected("text", "");
+                          }
+                        }}
                         onChange={(e) => updateSelected("text", e.target.value)}
                         placeholder="Напиши заметку..."
                         className={`min-h-[320px] w-full resize-none rounded-3xl border p-5 text-lg outline-none ${
