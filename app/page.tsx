@@ -311,7 +311,7 @@ export default function NotesApp() {
     const newNote = {
       user_id: user.id,
       title: options.title || "Новая заметка",
-      text: options.text || "Начни писать здесь...",
+      text: options.text ?? "",
       tag: options.tag || "Без тега",
       folder: options.folder || "Личное",
       date: new Date().toLocaleDateString("ru-RU", {
@@ -895,7 +895,7 @@ export default function NotesApp() {
                     onClick={() =>
                         createNote({
                           title: "Новая заметка",
-                          text: "Начни писать здесь...",
+                          text: "",
                         })
                     }
                     className={`rounded-2xl px-4 py-3 text-sm font-bold shadow-lg transition ${
