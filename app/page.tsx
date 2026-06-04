@@ -507,12 +507,6 @@ export default function NotesApp() {
       case "Архив":
         return notes.filter((note) => note.archived).length;
 
-      case "Проекты":
-        return notes.filter((note) => note.tag === "Проекты").length;
-
-      case "Без тега":
-        return notes.filter((note) => note.tag === "Без тега").length;
-
       default:
         return 0;
     }
@@ -603,8 +597,8 @@ export default function NotesApp() {
                                       : "bg-slate-200 text-slate-600"
                           }`}
                       >
-          {getFilterCount(item)}
-        </span>
+                    {getFilterCount(item)}
+                  </span>
                     </div>
                   </SidebarButton>
               ))}
@@ -632,12 +626,13 @@ export default function NotesApp() {
                   }`}
               />
 
-              {search && (
+              {search.length > 0 && (
                   <button
+                      type="button"
                       onClick={() => setSearch("")}
-                      className={`absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-sm transition ${
+                      className={`absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-sm font-bold transition ${
                           theme === "dark"
-                              ? "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                              ? "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
                               : "bg-slate-200 text-slate-600 hover:bg-slate-300 hover:text-slate-900"
                       }`}
                   >
