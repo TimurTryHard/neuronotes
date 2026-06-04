@@ -493,6 +493,31 @@ export default function NotesApp() {
 
   const filters = ["Все", "Закреплённые", "Избранное", "Архив"];
 
+  function getFilterCount(filterName: string) {
+    switch (filterName) {
+      case "Все":
+        return notes.length;
+
+      case "Закреплённые":
+        return notes.filter((note) => note.pinned).length;
+
+      case "Избранное":
+        return notes.filter((note) => note.favorite).length;
+
+      case "Архив":
+        return notes.filter((note) => note.archived).length;
+
+      case "Проекты":
+        return notes.filter((note) => note.tag === "Проекты").length;
+
+      case "Без тега":
+        return notes.filter((note) => note.tag === "Без тега").length;
+
+      default:
+        return 0;
+    }
+  }
+
   if (!user) return <AuthScreen />;
 
   return (
@@ -564,7 +589,23 @@ export default function NotesApp() {
                       onClick={() => setFilter(item)}
                       theme={theme}
                   >
-                    {item}
+                    <div className="flex items-center justify-between gap-3">
+                      <span>{item}</span>
+
+                      <span
+                          className={`rounded-full px-2 py-0.5 text-xs ${
+                              filter === item
+                                  ? theme === "dark"
+                                      ? "bg-black/10 text-black"
+                                      : "bg-white/20 text-white"
+                                  : theme === "dark"
+                                      ? "bg-white/10 text-white/60"
+                                      : "bg-slate-200 text-slate-600"
+                          }`}
+                      >
+          {getFilterCount(item)}
+        </span>
+                    </div>
                   </SidebarButton>
               ))}
             </div>
