@@ -620,16 +620,31 @@ export default function NotesApp() {
           >
             <h2 className="mb-4 text-3xl font-black">Мои заметки</h2>
 
-            <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Поиск заметок..."
-                className={`mb-6 w-full rounded-2xl border px-4 py-3 outline-none ${
-                    theme === "dark"
-                        ? "border-white/10 bg-white/5 text-white placeholder:text-white/35"
-                        : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
-                }`}
-            />
+            <div className="relative mb-6">
+              <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Поиск заметок..."
+                  className={`w-full rounded-2xl border px-4 py-3 pr-12 outline-none ${
+                      theme === "dark"
+                          ? "border-white/10 bg-white/5 text-white placeholder:text-white/35"
+                          : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
+                  }`}
+              />
+
+              {search && (
+                  <button
+                      onClick={() => setSearch("")}
+                      className={`absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-sm transition ${
+                          theme === "dark"
+                              ? "bg-white/10 text-white/60 hover:bg-white/20 hover:text-white"
+                              : "bg-slate-200 text-slate-600 hover:bg-slate-300 hover:text-slate-900"
+                      }`}
+                  >
+                    ×
+                  </button>
+              )}
+            </div>
 
             {loading ? (
                 <p className={theme === "dark" ? "text-white/45" : "text-slate-500"}>
