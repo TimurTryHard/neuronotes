@@ -202,7 +202,6 @@ export default function NotesApp() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("Все");
-  const [folderFilter, setFolderFilter] = useState("Все папки");
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState<Theme>("dark");
   const [quickMenuOpen, setQuickMenuOpen] = useState(false);
@@ -270,14 +269,6 @@ export default function NotesApp() {
   const selectedNote =
       notes.find((note) => note.id === selectedId) || notes[0] || null;
 
-  const folders = useMemo(() => {
-    const uniqueFolders = notes
-        .map((note) => note.folder || "Личное")
-        .filter((folder, index, array) => array.indexOf(folder) === index);
-
-    return ["Все папки", ...uniqueFolders];
-  }, [notes]);
-
   const visibleNotes = useMemo(() => {
     return notes
         .filter((note) => {
@@ -287,26 +278,18 @@ export default function NotesApp() {
           const matchesSearch =
               !q ||
               note.title?.toLowerCase().includes(q) ||
-              noteText.toLowerCase().includes(q) ||
-              note.tag?.toLowerCase().includes(q) ||
-              note.folder?.toLowerCase().includes(q);
+              noteText.toLowerCase().includes(q);
 
           const matchesMainFilter =
               filter === "Все" ||
               (filter === "Закреплённые" && note.pinned) ||
               (filter === "Избранное" && note.favorite) ||
-              (filter === "Архив" && note.archived) ||
-              (filter === "Без тега" && note.tag === "Без тега") ||
-              note.tag === filter;
+              (filter === "Архив" && note.archived);
 
-          const matchesFolder =
-              folderFilter === "Все папки" ||
-              (note.folder || "Личное") === folderFilter;
-
-          return matchesSearch && matchesMainFilter && matchesFolder;
+          return matchesSearch && matchesMainFilter;
         })
         .sort((a, b) => Number(b.pinned) - Number(a.pinned));
-  }, [notes, search, filter, folderFilter]);
+  }, [notes, search, filter]);
 
   async function createNote(
       options: {
@@ -354,7 +337,7 @@ export default function NotesApp() {
   }
 
   function updateSelected(
-      field: "title" | "text" | "tag" | "date" | "folder" | "color",
+      field: "title" | "text" | "date" | "color",
       value: string
   ) {
     if (!selectedNote) return;
@@ -508,14 +491,7 @@ export default function NotesApp() {
     await supabase.auth.signOut();
   }
 
-  const filters = [
-    "Все",
-    "Закреплённые",
-    "Избранное",
-    "Проекты",
-    "Без тега",
-    "Архив",
-  ];
+  const filters = ["Все", "Закреплённые", "Избранное", "Архив"];
 
   if (!user) return <AuthScreen />;
 
@@ -580,7 +556,7 @@ export default function NotesApp() {
               Фильтры
             </p>
 
-            <div className="mb-8 space-y-2">
+            <div className="space-y-2">
               {filters.map((item) => (
                   <SidebarButton
                       key={item}
@@ -589,27 +565,6 @@ export default function NotesApp() {
                       theme={theme}
                   >
                     {item}
-                  </SidebarButton>
-              ))}
-            </div>
-
-            <p
-                className={`mb-3 text-sm ${
-                    theme === "dark" ? "text-white/35" : "text-slate-400"
-                }`}
-            >
-              Папки
-            </p>
-
-            <div className="space-y-2">
-              {folders.map((folder) => (
-                  <SidebarButton
-                      key={folder}
-                      active={folderFilter === folder}
-                      onClick={() => setFolderFilter(folder)}
-                      theme={theme}
-                  >
-                    📁 {folder}
                   </SidebarButton>
               ))}
             </div>
@@ -685,11 +640,10 @@ export default function NotesApp() {
                           </p>
 
                           <div
-                              className={`flex justify-between text-xs ${
+                              className={`flex justify-end text-xs ${
                                   theme === "dark" ? "text-white/40" : "text-slate-400"
                               }`}
                           >
-                            <span>📁 {note.folder || "Личное"}</span>
                             <span>{note.date || "Без даты"}</span>
                           </div>
                         </button>
@@ -718,14 +672,9 @@ export default function NotesApp() {
                           theme === "dark" ? "text-white/45" : "text-slate-500"
                         }
                     >
-                      📁 {selectedNote.folder || "Личное"} · 🏷{" "}
-                      {selectedNote.tag || "Без тега"}
-
-                      <span className="ml-4">
-                    {saveStatus === "saving" && "💾 Сохранение..."}
-                        {saveStatus === "saved" && "✅ Сохранено"}
-                        {saveStatus === "error" && "⚠️ Ошибка сохранения"}
-                  </span>
+                      {saveStatus === "saving" && "💾 Сохранение..."}
+                      {saveStatus === "saved" && "✅ Сохранено"}
+                      {saveStatus === "error" && "⚠️ Ошибка сохранения"}
                     </div>
 
                     <div className="flex gap-3">
@@ -787,29 +736,7 @@ export default function NotesApp() {
                         }`}
                     />
 
-                    <div className="mb-6 grid gap-4 md:grid-cols-4">
-                      <input
-                          value={selectedNote.folder || ""}
-                          onChange={(e) => updateSelected("folder", e.target.value)}
-                          placeholder="Папка"
-                          className={`rounded-2xl border px-4 py-3 outline-none ${
-                              theme === "dark"
-                                  ? "border-white/10 bg-black/20 text-white placeholder:text-white/30"
-                                  : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
-                          }`}
-                      />
-
-                      <input
-                          value={selectedNote.tag || ""}
-                          onChange={(e) => updateSelected("tag", e.target.value)}
-                          placeholder="Тег"
-                          className={`rounded-2xl border px-4 py-3 outline-none ${
-                              theme === "dark"
-                                  ? "border-white/10 bg-black/20 text-white placeholder:text-white/30"
-                                  : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
-                          }`}
-                      />
-
+                    <div className="mb-6 grid gap-4 md:grid-cols-2">
                       <input
                           value={selectedNote.date || ""}
                           onChange={(e) => updateSelected("date", e.target.value)}
