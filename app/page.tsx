@@ -28,6 +28,12 @@ type Note = {
   image_url: string | null;
 };
 
+const oldDefaultText = "Начни писать здесь...";
+
+function cleanNoteText(text: string | null) {
+  return text === oldDefaultText ? "" : text || "";
+}
+
 const colorLabels: { value: NoteColor; label: string }[] = [
   { value: "default", label: "Обычный" },
   { value: "cyan", label: "Голубой" },
@@ -222,8 +228,13 @@ export default function NotesApp() {
       return;
     }
 
-    setNotes((data || []) as Note[]);
-    setSelectedId(data?.[0]?.id || null);
+    const cleanedNotes = ((data || []) as Note[]).map((note) => ({
+      ...note,
+      text: cleanNoteText(note.text),
+    }));
+
+    setNotes(cleanedNotes);
+    setSelectedId(cleanedNotes[0]?.id || null);
     setLoading(false);
   }, []);
 
@@ -271,11 +282,12 @@ export default function NotesApp() {
     return notes
         .filter((note) => {
           const q = search.toLowerCase();
+          const noteText = cleanNoteText(note.text);
 
           const matchesSearch =
               !q ||
               note.title?.toLowerCase().includes(q) ||
-              note.text?.toLowerCase().includes(q) ||
+              noteText.toLowerCase().includes(q) ||
               note.tag?.toLowerCase().includes(q) ||
               note.folder?.toLowerCase().includes(q);
 
@@ -299,7 +311,6 @@ export default function NotesApp() {
   async function createNote(
       options: {
         title?: string;
-        text?: string;
         tag?: string;
         folder?: string;
         pinned?: boolean;
@@ -311,7 +322,7 @@ export default function NotesApp() {
     const newNote = {
       user_id: user.id,
       title: options.title || "Новая заметка",
-      text: options.text ?? "",
+      text: "",
       tag: options.tag || "Без тега",
       folder: options.folder || "Личное",
       date: new Date().toLocaleDateString("ru-RU", {
@@ -632,6 +643,7 @@ export default function NotesApp() {
                 <div className="space-y-4">
                   {visibleNotes.map((note) => {
                     const noteColor = note.color || "default";
+                    const previewText = cleanNoteText(note.text);
 
                     return (
                         <button
@@ -669,7 +681,7 @@ export default function NotesApp() {
                                   theme === "dark" ? "text-white/55" : "text-slate-500"
                               }`}
                           >
-                            {note.text || "Пустая заметка"}
+                            {previewText || "Пустая заметка"}
                           </p>
 
                           <div
@@ -827,12 +839,7 @@ export default function NotesApp() {
                     </div>
 
                     <textarea
-                        value={selectedNote.text || ""}
-                        onFocus={() => {
-                          if (selectedNote.text === "") {
-                            updateSelected("text", "");
-                          }
-                        }}
+                        value={cleanNoteText(selectedNote.text)}
                         onChange={(e) => updateSelected("text", e.target.value)}
                         placeholder="Напиши заметку..."
                         className={`min-h-[320px] w-full resize-none rounded-3xl border p-5 text-lg outline-none ${
@@ -900,7 +907,6 @@ export default function NotesApp() {
                     onClick={() =>
                         createNote({
                           title: "Новая заметка",
-                          text: "",
                         })
                     }
                     className={`rounded-2xl px-4 py-3 text-sm font-bold shadow-lg transition ${
