@@ -28,19 +28,19 @@ type Note = {
   image_url: string | null;
 };
 
-const oldDefaultText = "РќР°С‡РЅРё РїРёСЃР°С‚СЊ Р·РґРµСЃСЊ...";
+const oldDefaultText = "Начни писать здесь...";
 
 function cleanNoteText(text: string | null) {
   return text === oldDefaultText ? "" : text || "";
 }
 
 const colorLabels: { value: NoteColor; label: string }[] = [
-  { value: "default", label: "РћР±С‹С‡РЅС‹Р№" },
-  { value: "cyan", label: "Р“РѕР»СѓР±РѕР№" },
-  { value: "violet", label: "Р¤РёРѕР»РµС‚РѕРІС‹Р№" },
-  { value: "pink", label: "Р РѕР·РѕРІС‹Р№" },
-  { value: "green", label: "Р—РµР»С‘РЅС‹Р№" },
-  { value: "orange", label: "РћСЂР°РЅР¶РµРІС‹Р№" },
+  { value: "default", label: "Обычный" },
+  { value: "cyan", label: "Голубой" },
+  { value: "violet", label: "Фиолетовый" },
+  { value: "pink", label: "Розовый" },
+  { value: "green", label: "Зелёный" },
+  { value: "orange", label: "Оранжевый" },
 ];
 
 function getNoteColorClasses(color: NoteColor, theme: Theme) {
@@ -72,7 +72,7 @@ function getNoteColorClasses(color: NoteColor, theme: Theme) {
 function LogoIcon() {
   return (
       <div className="flex h-14 w-14 items-center justify-center rounded-[20px] bg-gradient-to-br from-cyan-400 via-violet-500 to-pink-500 text-lg font-black text-white shadow-[0_0_35px_rgba(139,92,246,0.45)]">
-        Nвњ¦
+        N✦
       </div>
   );
 }
@@ -134,25 +134,25 @@ function AuthScreen() {
 
               <div>
                 <h1 className="text-2xl font-black">NeuroNotes</h1>
-                <p className="text-white/45">РЎРµСЂРІРёСЃ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ Р·Р°РјРµС‚РѕРє</p>
+                <p className="text-white/45">Сервис для хранения заметок</p>
               </div>
             </div>
 
             <h2 className="mb-6 text-5xl font-black leading-tight lg:text-7xl">
-              РўРІРѕРё Р·Р°РјРµС‚РєРё РІ{" "}
+              Твои заметки в{" "}
               <span className="bg-gradient-to-r from-cyan-300 to-pink-300 bg-clip-text text-transparent">
-              Р»РёС‡РЅРѕРј Р°РєРєР°СѓРЅС‚Рµ
+              личном аккаунте
             </span>
             </h2>
 
             <p className="max-w-xl text-lg leading-8 text-white/60">
-              РЎРѕР·РґР°РІР°Р№, Р·Р°РєСЂРµРїР»СЏР№, СЂР°СЃРєСЂР°С€РёРІР°Р№ Рё С…СЂР°РЅРё Р·Р°РјРµС‚РєРё РІ Supabase.
+              Создавай, закрепляй, раскрашивай и храни заметки в Supabase.
             </p>
           </section>
 
           <section className="mx-auto w-full max-w-md rounded-[36px] border border-white/10 bg-white/[0.06] p-8 shadow-2xl">
             <h3 className="mb-2 text-3xl font-black">
-              {mode === "register" ? "Р РµРіРёСЃС‚СЂР°С†РёСЏ" : "Р’С…РѕРґ"}
+              {mode === "register" ? "Регистрация" : "Вход"}
             </h3>
 
             <form onSubmit={handleSubmit} className="mt-8 space-y-4">
@@ -171,7 +171,7 @@ function AuthScreen() {
                   required
                   minLength={6}
                   type="password"
-                  placeholder="РџР°СЂРѕР»СЊ"
+                  placeholder="Пароль"
                   className="w-full rounded-2xl border border-white/10 bg-black/25 px-4 py-4 outline-none"
               />
 
@@ -179,7 +179,7 @@ function AuthScreen() {
                   type="submit"
                   className="w-full rounded-2xl bg-gradient-to-r from-cyan-400 via-violet-500 to-pink-500 px-5 py-4 font-black text-white"
               >
-                {mode === "register" ? "РЎРѕР·РґР°С‚СЊ Р°РєРєР°СѓРЅС‚" : "Р’РѕР№С‚Рё"}
+                {mode === "register" ? "Создать аккаунт" : "Войти"}
               </button>
             </form>
 
@@ -189,8 +189,8 @@ function AuthScreen() {
                 className="mt-5 w-full text-sm text-cyan-300"
             >
               {mode === "register"
-                  ? "РЈР¶Рµ РµСЃС‚СЊ Р°РєРєР°СѓРЅС‚? Р’РѕР№С‚Рё"
-                  : "РќРµС‚ Р°РєРєР°СѓРЅС‚Р°? Р—Р°СЂРµРіРёСЃС‚СЂРёСЂРѕРІР°С‚СЊСЃСЏ"}
+                  ? "Уже есть аккаунт? Войти"
+                  : "Нет аккаунта? Зарегистрироваться"}
             </button>
           </section>
         </main>
@@ -203,7 +203,7 @@ export default function NotesApp() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("Р’СЃРµ");
+  const [filter, setFilter] = useState("Все");
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState<Theme>("dark");
   const [quickMenuOpen, setQuickMenuOpen] = useState(false);
@@ -225,7 +225,7 @@ export default function NotesApp() {
         .order("id", { ascending: false });
 
     if (error) {
-      console.error("РћС€РёР±РєР° Р·Р°РіСЂСѓР·РєРё:", error.message);
+      console.error("Ошибка загрузки:", error.message);
       setLoading(false);
       return;
     }
@@ -284,10 +284,10 @@ export default function NotesApp() {
               noteText.toLowerCase().includes(q);
 
           const matchesMainFilter =
-              filter === "Р’СЃРµ" ||
-              (filter === "Р—Р°РєСЂРµРїР»С‘РЅРЅС‹Рµ" && note.pinned) ||
-              (filter === "РР·Р±СЂР°РЅРЅРѕРµ" && note.favorite) ||
-              (filter === "РђСЂС…РёРІ" && note.archived);
+              filter === "Все" ||
+              (filter === "Закреплённые" && note.pinned) ||
+              (filter === "Избранное" && note.favorite) ||
+              (filter === "Архив" && note.archived);
 
           return matchesSearch && matchesMainFilter;
         })
@@ -307,10 +307,10 @@ export default function NotesApp() {
 
     const newNote = {
       user_id: user.id,
-      title: options.title || "РќРѕРІР°СЏ Р·Р°РјРµС‚РєР°",
+      title: options.title || "Новая заметка",
       text: "",
-      tag: options.tag || "Р‘РµР· С‚РµРіР°",
-      folder: options.folder || "Р›РёС‡РЅРѕРµ",
+      tag: options.tag || "Без тега",
+      folder: options.folder || "Личное",
       date: new Date().toLocaleDateString("ru-RU", {
         day: "2-digit",
         month: "long",
@@ -492,20 +492,20 @@ export default function NotesApp() {
     await supabase.auth.signOut();
   }
 
-  const filters = ["Р’СЃРµ", "Р—Р°РєСЂРµРїР»С‘РЅРЅС‹Рµ", "РР·Р±СЂР°РЅРЅРѕРµ", "РђСЂС…РёРІ"];
+  const filters = ["Все", "Закреплённые", "Избранное", "Архив"];
 
   function getFilterCount(filterName: string) {
     switch (filterName) {
-      case "Р’СЃРµ":
+      case "Все":
         return notes.length;
 
-      case "Р—Р°РєСЂРµРїР»С‘РЅРЅС‹Рµ":
+      case "Закреплённые":
         return notes.filter((note) => note.pinned).length;
 
-      case "РР·Р±СЂР°РЅРЅРѕРµ":
+      case "Избранное":
         return notes.filter((note) => note.favorite).length;
 
-      case "РђСЂС…РёРІ":
+      case "Архив":
         return notes.filter((note) => note.archived).length;
 
       default:
@@ -536,6 +536,7 @@ export default function NotesApp() {
 
               <div>
                 <h1 className="text-xl font-black">NeuroNotes</h1>
+
                 <p
                     className={`text-sm ${
                         theme === "dark" ? "text-white/45" : "text-slate-500"
@@ -555,7 +556,7 @@ export default function NotesApp() {
                         : "border-slate-300 bg-white text-slate-800 hover:bg-slate-100"
                 }`}
             >
-              Р’С‹Р№С‚Рё
+              Выйти
             </button>
 
             <button
@@ -567,7 +568,7 @@ export default function NotesApp() {
                         : "border-slate-300 bg-white text-slate-800 hover:bg-slate-100"
                 }`}
             >
-              {theme === "dark" ? "вЂпёЏ РЎРІРµС‚Р»Р°СЏ С‚РµРјР°" : "рџЊ™ РўС‘РјРЅР°СЏ С‚РµРјР°"}
+              {theme === "dark" ? "☀️ Светлая тема" : "🌙 Тёмная тема"}
             </button>
 
             <p
@@ -575,7 +576,7 @@ export default function NotesApp() {
                     theme === "dark" ? "text-white/35" : "text-slate-400"
                 }`}
             >
-              Р¤РёР»СЊС‚СЂС‹
+              Фильтры
             </p>
 
             <div className="space-y-2">
@@ -615,13 +616,13 @@ export default function NotesApp() {
                       : "border-slate-200 bg-slate-50"
               }`}
           >
-            <h2 className="mb-4 text-3xl font-black">РњРѕРё Р·Р°РјРµС‚РєРё</h2>
+            <h2 className="mb-4 text-3xl font-black">Мои заметки</h2>
 
             <div className="relative mb-6">
               <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  placeholder="РџРѕРёСЃРє Р·Р°РјРµС‚РѕРє..."
+                  placeholder="Поиск заметок..."
                   className={`w-full rounded-2xl border px-4 py-3 pr-12 outline-none ${
                       theme === "dark"
                           ? "border-white/10 bg-white/5 text-white placeholder:text-white/35"
@@ -639,14 +640,14 @@ export default function NotesApp() {
                               : "bg-slate-200 text-slate-600 hover:bg-slate-300 hover:text-slate-900"
                       }`}
                   >
-                    Г—
+                    ×
                   </button>
               )}
             </div>
 
             {loading ? (
                 <p className={theme === "dark" ? "text-white/45" : "text-slate-500"}>
-                  Р—Р°РіСЂСѓР·РєР°...
+                  Загрузка...
                 </p>
             ) : visibleNotes.length > 0 ? (
                 <div className="space-y-4">
@@ -669,19 +670,19 @@ export default function NotesApp() {
                         >
                           <div className="mb-3 flex justify-between gap-3">
                             <h3 className="font-bold">
-                              {note.pinned && "рџ“Њ "}
-                              {note.title || "Р‘РµР· РЅР°Р·РІР°РЅРёСЏ"}
+                              {note.pinned && "📌 "}
+                              {note.title || "Без названия"}
                             </h3>
 
                             {note.favorite && (
-                                <span className="text-yellow-400">в…</span>
+                                <span className="text-yellow-400">★</span>
                             )}
                           </div>
 
                           {note.image_url && (
                               <img
                                   src={note.image_url}
-                                  alt="РљР°СЂС‚РёРЅРєР° Р·Р°РјРµС‚РєРё"
+                                  alt="Картинка заметки"
                                   className="mb-4 h-28 w-full rounded-2xl object-cover"
                               />
                           )}
@@ -691,7 +692,7 @@ export default function NotesApp() {
                                   theme === "dark" ? "text-white/55" : "text-slate-500"
                               }`}
                           >
-                            {previewText || "РџСѓСЃС‚Р°СЏ Р·Р°РјРµС‚РєР°"}
+                            {previewText || "Пустая заметка"}
                           </p>
 
                           <div
@@ -699,7 +700,7 @@ export default function NotesApp() {
                                   theme === "dark" ? "text-white/40" : "text-slate-400"
                               }`}
                           >
-                            <span>{note.date || "Р‘РµР· РґР°С‚С‹"}</span>
+                            <span>{note.date || "Без даты"}</span>
                           </div>
                         </button>
                     );
@@ -713,7 +714,7 @@ export default function NotesApp() {
                             : "border-slate-300 text-slate-400"
                     }`}
                 >
-                  РЎРѕР·РґР°Р№ РїРµСЂРІСѓСЋ Р·Р°РјРµС‚РєСѓ
+                  Создай первую заметку
                 </div>
             )}
           </section>
@@ -727,9 +728,9 @@ export default function NotesApp() {
                           theme === "dark" ? "text-white/45" : "text-slate-500"
                         }
                     >
-                      {saveStatus === "saving" && "рџ’ѕ РЎРѕС…СЂР°РЅРµРЅРёРµ..."}
-                      {saveStatus === "saved" && "вњ… РЎРѕС…СЂР°РЅРµРЅРѕ"}
-                      {saveStatus === "error" && "вљ пёЏ РћС€РёР±РєР° СЃРѕС…СЂР°РЅРµРЅРёСЏ"}
+                      {saveStatus === "saving" && "💾 Сохранение..."}
+                      {saveStatus === "saved" && "✅ Сохранено"}
+                      {saveStatus === "error" && "⚠️ Ошибка сохранения"}
                     </div>
 
                     <div className="flex gap-3">
@@ -742,7 +743,7 @@ export default function NotesApp() {
                                   : "bg-white shadow-sm hover:bg-slate-100"
                           }`}
                       >
-                        рџ“Њ
+                        📌
                       </button>
 
                       <button
@@ -754,7 +755,7 @@ export default function NotesApp() {
                                   : "bg-white shadow-sm hover:bg-slate-100"
                           }`}
                       >
-                        в…
+                        ★
                       </button>
 
                       <button
@@ -766,7 +767,7 @@ export default function NotesApp() {
                                   : "bg-white shadow-sm hover:bg-slate-100"
                           }`}
                       >
-                        рџ“¦
+                        📦
                       </button>
 
                       <button
@@ -774,7 +775,7 @@ export default function NotesApp() {
                           onClick={() => setDeleteModalOpen(true)}
                           className="rounded-2xl bg-red-400/10 p-3 text-red-400 transition hover:bg-red-400/20"
                       >
-                        рџ—‘
+                        🗑
                       </button>
                     </div>
                   </div>
@@ -787,7 +788,7 @@ export default function NotesApp() {
                     <input
                         value={selectedNote.title || ""}
                         onChange={(e) => updateSelected("title", e.target.value)}
-                        placeholder="РќР°Р·РІР°РЅРёРµ Р·Р°РјРµС‚РєРё"
+                        placeholder="Название заметки"
                         className={`mb-6 w-full bg-transparent text-4xl font-black outline-none ${
                             theme === "dark"
                                 ? "placeholder:text-white/25"
@@ -799,7 +800,7 @@ export default function NotesApp() {
                       <input
                           value={selectedNote.date || ""}
                           onChange={(e) => updateSelected("date", e.target.value)}
-                          placeholder="Р”Р°С‚Р°"
+                          placeholder="Дата"
                           className={`rounded-2xl border px-4 py-3 outline-none ${
                               theme === "dark"
                                   ? "border-white/10 bg-black/20 text-white placeholder:text-white/30"
@@ -827,7 +828,7 @@ export default function NotesApp() {
                     <textarea
                         value={cleanNoteText(selectedNote.text)}
                         onChange={(e) => updateSelected("text", e.target.value)}
-                        placeholder="РќР°РїРёС€Рё Р·Р°РјРµС‚РєСѓ..."
+                        placeholder="Напиши заметку..."
                         className={`min-h-[320px] w-full resize-none rounded-3xl border p-5 text-lg outline-none ${
                             theme === "dark"
                                 ? "border-white/10 bg-black/20 text-white placeholder:text-white/25"
@@ -843,7 +844,7 @@ export default function NotesApp() {
                                   : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
                           }`}
                       >
-                        рџ–ј Р—Р°РіСЂСѓР·РёС‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+                        🖼 Загрузить изображение
                         <input
                             type="file"
                             accept="image/*"
@@ -861,7 +862,7 @@ export default function NotesApp() {
                               onClick={removeImage}
                               className="rounded-2xl border border-red-400/20 bg-red-400/10 px-5 py-3 text-sm text-red-400"
                           >
-                            РЈРґР°Р»РёС‚СЊ РёР·РѕР±СЂР°Р¶РµРЅРёРµ
+                            Удалить изображение
                           </button>
                       )}
                     </div>
@@ -869,7 +870,7 @@ export default function NotesApp() {
                     {selectedNote.image_url && (
                         <img
                             src={selectedNote.image_url}
-                            alt="РљР°СЂС‚РёРЅРєР° Р·Р°РјРµС‚РєРё"
+                            alt="Картинка заметки"
                             className="mt-5 max-h-[360px] rounded-3xl object-cover"
                         />
                     )}
@@ -881,7 +882,7 @@ export default function NotesApp() {
                         theme === "dark" ? "text-white/50" : "text-slate-400"
                     }`}
                 >
-                  РЎРѕР·РґР°Р№ РїРµСЂРІСѓСЋ Р·Р°РјРµС‚РєСѓ
+                  Создай первую заметку
                 </div>
             )}
           </section>
@@ -897,18 +898,18 @@ export default function NotesApp() {
                   }`}
               >
                 <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-400/10 text-2xl text-red-400">
-                  рџ—‘
+                  🗑
                 </div>
 
-                <h3 className="mb-3 text-2xl font-black">РЈРґР°Р»РёС‚СЊ Р·Р°РјРµС‚РєСѓ?</h3>
+                <h3 className="mb-3 text-2xl font-black">Удалить заметку?</h3>
 
                 <p
                     className={`mb-6 leading-7 ${
                         theme === "dark" ? "text-white/55" : "text-slate-500"
                     }`}
                 >
-                  Р—Р°РјРµС‚РєР° В«{selectedNote.title || "Р‘РµР· РЅР°Р·РІР°РЅРёСЏ"}В» Р±СѓРґРµС‚ СѓРґР°Р»РµРЅР°.
-                  Р­С‚Рѕ РґРµР№СЃС‚РІРёРµ РЅРµР»СЊР·СЏ РѕС‚РјРµРЅРёС‚СЊ.
+                  Заметка «{selectedNote.title || "Без названия"}» будет удалена.
+                  Это действие нельзя отменить.
                 </p>
 
                 <div className="flex justify-end gap-3">
@@ -921,7 +922,7 @@ export default function NotesApp() {
                               : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
                       }`}
                   >
-                    РћС‚РјРµРЅР°
+                    Отмена
                   </button>
 
                   <button
@@ -929,7 +930,7 @@ export default function NotesApp() {
                       onClick={deleteSelected}
                       className="rounded-2xl bg-red-500 px-5 py-3 font-bold text-white transition hover:bg-red-600"
                   >
-                    РЈРґР°Р»РёС‚СЊ
+                    Удалить
                   </button>
                 </div>
               </div>
@@ -943,7 +944,7 @@ export default function NotesApp() {
                     type="button"
                     onClick={() =>
                         createNote({
-                          title: "РќРѕРІР°СЏ Р·Р°РјРµС‚РєР°",
+                          title: "Новая заметка",
                         })
                     }
                     className={`rounded-2xl px-4 py-3 text-sm font-bold shadow-lg transition ${
@@ -952,14 +953,14 @@ export default function NotesApp() {
                             : "bg-slate-900 text-white hover:bg-slate-800"
                     }`}
                 >
-                  РўРµРєСЃС‚РѕРІР°СЏ Р·Р°РјРµС‚РєР°
+                  Текстовая заметка
                 </button>
 
                 <button
                     type="button"
                     onClick={() =>
                         createNote({
-                          title: "Р’Р°Р¶РЅР°СЏ Р·Р°РјРµС‚РєР°",
+                          title: "Важная заметка",
                           pinned: true,
                         })
                     }
@@ -969,16 +970,16 @@ export default function NotesApp() {
                             : "bg-slate-900 text-white hover:bg-slate-800"
                     }`}
                 >
-                  Р—Р°РєСЂРµРїР»С‘РЅРЅР°СЏ Р·Р°РјРµС‚РєР°
+                  Закреплённая заметка
                 </button>
 
                 <button
                     type="button"
                     onClick={() =>
                         createNote({
-                          title: "РџСЂРѕРµРєС‚РЅР°СЏ Р·Р°РјРµС‚РєР°",
-                          tag: "РџСЂРѕРµРєС‚С‹",
-                          folder: "РџСЂРѕРµРєС‚С‹",
+                          title: "Проектная заметка",
+                          tag: "Проекты",
+                          folder: "Проекты",
                           color: "violet",
                         })
                     }
@@ -988,7 +989,7 @@ export default function NotesApp() {
                             : "bg-slate-900 text-white hover:bg-slate-800"
                     }`}
                 >
-                  РџСЂРѕРµРєС‚РЅР°СЏ Р·Р°РјРµС‚РєР°
+                  Проектная заметка
                 </button>
               </div>
           )}
@@ -998,7 +999,7 @@ export default function NotesApp() {
               onClick={() => setQuickMenuOpen(!quickMenuOpen)}
               className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-violet-500 to-pink-500 text-3xl font-black text-white shadow-[0_0_35px_rgba(139,92,246,0.55)] transition hover:scale-105"
           >
-            {quickMenuOpen ? "Г—" : "+"}
+            {quickMenuOpen ? "×" : "+"}
           </button>
         </div>
       </div>
