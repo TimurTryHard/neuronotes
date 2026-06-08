@@ -46,12 +46,12 @@ const colorLabels: { value: NoteColor; label: string }[] = [
 function getNoteColorClasses(color: NoteColor, theme: Theme) {
   if (theme === "light") {
     const lightColors: Record<NoteColor, string> = {
-      default: "border-slate-200 bg-white",
-      cyan: "border-cyan-200 bg-cyan-50",
-      violet: "border-violet-200 bg-violet-50",
-      pink: "border-pink-200 bg-pink-50",
-      green: "border-emerald-200 bg-emerald-50",
-      orange: "border-orange-200 bg-orange-50",
+      default: "border-slate-200 bg-white/25 backdrop-blur-xl",
+      cyan: "border-cyan-200 bg-cyan-100/25 backdrop-blur-xl",
+      violet: "border-violet-200 bg-violet-100/25 backdrop-blur-xl",
+      pink: "border-pink-200 bg-pink-100/25 backdrop-blur-xl",
+      green: "border-emerald-200 bg-emerald-100/25 backdrop-blur-xl",
+      orange: "border-orange-200 bg-orange-100/25 backdrop-blur-xl",
     };
 
     return lightColors[color];
@@ -530,7 +530,7 @@ export default function NotesApp() {
             className={`absolute inset-0 ${
                 theme === "dark"
                     ? "bg-[#070b18]/75"
-                    : "bg-white/40"
+                    : "bg-white/20"
             }`}
         />
 
@@ -540,7 +540,7 @@ export default function NotesApp() {
               className={`border-r p-6 ${
                   theme === "dark"
                       ? "border-white/10 bg-white/[0.03]"
-                      : "border-slate-200 bg-white/45 backdrop-blur-xl"
+                      : "border-slate-200 bg-white/20 backdrop-blur-xl"
               }`}
           >
             <div className="mb-8 flex items-center gap-3">
