@@ -146,7 +146,7 @@ function AuthScreen() {
             </h2>
 
             <p className="max-w-xl text-lg leading-8 text-white/60">
-              Создавай, закрепляй, раскрашивай и храни заметки в Supabase.
+              Создавай, закрепляй, раскрашивай и храни заметки.
             </p>
           </section>
 
@@ -517,18 +517,30 @@ export default function NotesApp() {
 
   return (
       <div
-          className={`min-h-screen ${
-              theme === "dark"
-                  ? "bg-[#070b18] text-white"
-                  : "bg-[#f4f7fb] text-slate-900"
+          className={`relative min-h-screen overflow-hidden ${
+              theme === "dark" ? "text-white" : "text-slate-900"
           }`}
       >
+        <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: 'url("/bg-notes.png")' }}
+        />
+
+        <div
+            className={`absolute inset-0 ${
+                theme === "dark"
+                    ? "bg-[#070b18]/75"
+                    : "bg-white/20000"
+            }`}
+        />
+
+        <div className="relative z-10">
         <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[280px_420px_1fr]">
           <aside
               className={`border-r p-6 ${
                   theme === "dark"
                       ? "border-white/10 bg-white/[0.03]"
-                      : "border-slate-200 bg-white"
+                      : "border-slate-200 bg-white/45 backdrop-blur-xl"
               }`}
           >
             <div className="mb-8 flex items-center gap-3">
@@ -613,7 +625,7 @@ export default function NotesApp() {
               className={`border-r p-6 ${
                   theme === "dark"
                       ? "border-white/10 bg-black/20"
-                      : "border-slate-200 bg-slate-50"
+                      : "border-slate-200 bg-white/35 backdrop-blur-xl"
               }`}
           >
             <h2 className="mb-4 text-3xl font-black">Мои заметки</h2>
@@ -1001,6 +1013,7 @@ export default function NotesApp() {
           >
             {quickMenuOpen ? "×" : "+"}
           </button>
+             </div>
         </div>
       </div>
   );
