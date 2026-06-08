@@ -530,7 +530,7 @@ export default function NotesApp() {
             className={`absolute inset-0 ${
                 theme === "dark"
                     ? "bg-[#070b18]/75"
-                    : "bg-white/20000"
+                    : "bg-white/40"
             }`}
         />
 
