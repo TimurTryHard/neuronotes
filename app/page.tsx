@@ -529,8 +529,8 @@ export default function NotesApp() {
         <div
             className={`absolute inset-0 ${
                 theme === "dark"
-                    ? "bg-[#070b18]/75"
-                    : "bg-white/20"
+                    ? "bg-[#070b18]/55"
+                    : "bg-white/10"
             }`}
         />
 
@@ -625,7 +625,7 @@ export default function NotesApp() {
               className={`border-r p-6 ${
                   theme === "dark"
                       ? "border-white/10 bg-black/20"
-                      : "border-slate-200 bg-white/35 backdrop-blur-xl"
+                      : "border-slate-200 bg-white/15 backdrop-blur-xl"
               }`}
           >
             <h2 className="mb-4 text-3xl font-black">Мои заметки</h2>
