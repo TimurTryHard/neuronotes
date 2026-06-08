@@ -33,6 +33,15 @@ const oldDefaultText = "Начни писать здесь...";
 function cleanNoteText(text: string | null) {
   return text === oldDefaultText ? "" : text || "";
 }
+function formatDateTime() {
+  return new Date().toLocaleString("ru-RU", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 const colorLabels: { value: NoteColor; label: string }[] = [
   { value: "default", label: "Обычный" },
@@ -318,11 +327,7 @@ export default function NotesApp() {
       text: "",
       tag: options.tag || "Без тега",
       folder: options.folder || "Личное",
-      date: new Date().toLocaleDateString("ru-RU", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      }),
+      date: formatDateTime(),
       favorite: false,
       archived: false,
       color: options.color || "default",
@@ -353,12 +358,15 @@ export default function NotesApp() {
     if (!selectedNote) return;
 
     const noteId = selectedNote.id;
+    const updatedDate = formatDateTime();
 
     setSaveStatus("saving");
 
     setNotes((prev) =>
         prev.map((note) =>
-            note.id === noteId ? ({ ...note, [field]: value } as Note) : note
+            note.id === noteId
+                ? ({ ...note, [field]: value, date: updatedDate } as Note)
+                : note
         )
     );
 
@@ -369,7 +377,7 @@ export default function NotesApp() {
     debounceRef.current = setTimeout(async () => {
       const { error } = await supabase
           .from("notes")
-          .update({ [field]: value })
+          .update({ [field]: value, date: updatedDate })
           .eq("id", noteId);
 
       setSaveStatus(error ? "error" : "saved");
@@ -818,16 +826,25 @@ export default function NotesApp() {
                       />
 
                       <div className="mb-6 grid gap-4 md:grid-cols-2">
-                        <input
-                            value={selectedNote.date || ""}
-                            onChange={(e) => updateSelected("date", e.target.value)}
-                            placeholder="Дата"
-                            className={`rounded-2xl border px-4 py-3 outline-none ${
+                        <div
+                            className={`rounded-2xl border px-4 py-3 ${
                                 theme === "dark"
-                                    ? "border-white/10 bg-black/20 text-white placeholder:text-white/30"
-                                    : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
+                                    ? "border-white/10 bg-black/20 text-white"
+                                    : "border-slate-200 bg-white text-slate-900"
                             }`}
-                        />
+                        >
+                          <p
+                              className={`mb-1 text-xs ${
+                                  theme === "dark" ? "text-white/35" : "text-slate-400"
+                              }`}
+                          >
+                            Последнее изменение
+                          </p>
+
+                          <p className="font-medium">
+                            {selectedNote.date || "Дата не указана"}
+                          </p>
+                        </div>
 
                         <select
                             value={selectedNote.color || "default"}
