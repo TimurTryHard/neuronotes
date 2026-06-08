@@ -46,12 +46,12 @@ const colorLabels: { value: NoteColor; label: string }[] = [
 function getNoteColorClasses(color: NoteColor, theme: Theme) {
   if (theme === "light") {
     const lightColors: Record<NoteColor, string> = {
-      default: "border-slate-200 bg-white/25 backdrop-blur-xl",
-      cyan: "border-cyan-200 bg-cyan-100/25 backdrop-blur-xl",
-      violet: "border-violet-200 bg-violet-100/25 backdrop-blur-xl",
-      pink: "border-pink-200 bg-pink-100/25 backdrop-blur-xl",
-      green: "border-emerald-200 bg-emerald-100/25 backdrop-blur-xl",
-      orange: "border-orange-200 bg-orange-100/25 backdrop-blur-xl",
+      default: "border-slate-200 bg-white",
+      cyan: "border-cyan-200 bg-cyan-50",
+      violet: "border-violet-200 bg-violet-50",
+      pink: "border-pink-200 bg-pink-50",
+      green: "border-emerald-200 bg-emerald-50",
+      orange: "border-orange-200 bg-orange-50",
     };
 
     return lightColors[color];
@@ -126,8 +126,15 @@ function AuthScreen() {
   }
 
   return (
-      <div className="min-h-screen bg-[#070b18] text-white">
-        <main className="grid min-h-screen items-center gap-10 px-6 py-10 lg:grid-cols-2 lg:px-20">
+      <div className="relative min-h-screen overflow-hidden bg-[#070b18] text-white">
+        <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            style={{ backgroundImage: 'url("/bg-notes.png")' }}
+        />
+
+        <div className="absolute inset-0 bg-[#070b18]/80" />
+
+        <main className="relative z-10 grid min-h-screen items-center gap-10 px-6 py-10 lg:grid-cols-2 lg:px-20">
           <section>
             <div className="mb-8 flex items-center gap-4">
               <LogoIcon />
@@ -150,7 +157,7 @@ function AuthScreen() {
             </p>
           </section>
 
-          <section className="mx-auto w-full max-w-md rounded-[36px] border border-white/10 bg-white/[0.06] p-8 shadow-2xl">
+          <section className="mx-auto w-full max-w-md rounded-[36px] border border-white/10 bg-white/[0.06] p-8 shadow-2xl backdrop-blur-xl">
             <h3 className="mb-2 text-3xl font-black">
               {mode === "register" ? "Регистрация" : "Вход"}
             </h3>
@@ -528,492 +535,494 @@ export default function NotesApp() {
 
         <div
             className={`absolute inset-0 ${
-                theme === "dark"
-                    ? "bg-[#070b18]/55"
-                    : "bg-white/10"
+                theme === "dark" ? "bg-[#070b18]/80" : "bg-white/75"
             }`}
         />
 
         <div className="relative z-10">
-        <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[280px_420px_1fr]">
-          <aside
-              className={`border-r p-6 ${
-                  theme === "dark"
-                      ? "border-white/10 bg-white/[0.03]"
-                      : "border-slate-200 bg-white/20 backdrop-blur-xl"
-              }`}
-          >
-            <div className="mb-8 flex items-center gap-3">
-              <LogoIcon />
-
-              <div>
-                <h1 className="text-xl font-black">NeuroNotes</h1>
-
-                <p
-                    className={`text-sm ${
-                        theme === "dark" ? "text-white/45" : "text-slate-500"
-                    }`}
-                >
-                  {user.email}
-                </p>
-              </div>
-            </div>
-
-            <button
-                type="button"
-                onClick={logout}
-                className={`mb-4 w-full rounded-2xl border px-5 py-3 transition ${
+          <main className="grid min-h-screen grid-cols-1 lg:grid-cols-[280px_420px_1fr]">
+            <aside
+                className={`border-b p-4 lg:border-b-0 lg:border-r lg:p-6 ${
                     theme === "dark"
-                        ? "border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
-                        : "border-slate-300 bg-white text-slate-800 hover:bg-slate-100"
+                        ? "border-white/10 bg-white/[0.03]"
+                        : "border-slate-200 bg-white"
                 }`}
             >
-              Выйти
-            </button>
+              <div className="mb-5 flex items-center gap-3 lg:mb-8">
+                <LogoIcon />
 
-            <button
-                type="button"
-                onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className={`mb-8 w-full rounded-2xl border px-5 py-3 transition ${
-                    theme === "dark"
-                        ? "border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
-                        : "border-slate-300 bg-white text-slate-800 hover:bg-slate-100"
-                }`}
-            >
-              {theme === "dark" ? "☀️ Светлая тема" : "🌙 Тёмная тема"}
-            </button>
+                <div>
+                  <h1 className="text-xl font-black">NeuroNotes</h1>
 
-            <p
-                className={`mb-3 text-sm ${
-                    theme === "dark" ? "text-white/35" : "text-slate-400"
-                }`}
-            >
-              Фильтры
-            </p>
-
-            <div className="space-y-2">
-              {filters.map((item) => (
-                  <SidebarButton
-                      key={item}
-                      active={filter === item}
-                      onClick={() => setFilter(item)}
-                      theme={theme}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span>{item}</span>
-
-                      <span
-                          className={`rounded-full px-2 py-0.5 text-xs ${
-                              filter === item
-                                  ? theme === "dark"
-                                      ? "bg-black/10 text-black"
-                                      : "bg-white/20 text-white"
-                                  : theme === "dark"
-                                      ? "bg-white/10 text-white/60"
-                                      : "bg-slate-200 text-slate-600"
-                          }`}
-                      >
-                    {getFilterCount(item)}
-                  </span>
-                    </div>
-                  </SidebarButton>
-              ))}
-            </div>
-          </aside>
-
-          <section
-              className={`border-r p-6 ${
-                  theme === "dark"
-                      ? "border-white/10 bg-black/20"
-                      : "border-slate-200 bg-white/15 backdrop-blur-xl"
-              }`}
-          >
-            <h2 className="mb-4 text-3xl font-black">Мои заметки</h2>
-
-            <div className="relative mb-6">
-              <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Поиск заметок..."
-                  className={`w-full rounded-2xl border px-4 py-3 pr-12 outline-none ${
-                      theme === "dark"
-                          ? "border-white/10 bg-white/5 text-white placeholder:text-white/35"
-                          : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
-                  }`}
-              />
-
-              {search.length > 0 && (
-                  <button
-                      type="button"
-                      onClick={() => setSearch("")}
-                      className={`absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-sm font-bold transition ${
-                          theme === "dark"
-                              ? "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
-                              : "bg-slate-200 text-slate-600 hover:bg-slate-300 hover:text-slate-900"
+                  <p
+                      className={`text-sm ${
+                          theme === "dark" ? "text-white/45" : "text-slate-500"
                       }`}
                   >
-                    ×
-                  </button>
-              )}
-            </div>
+                    {user.email}
+                  </p>
+                </div>
+              </div>
 
-            {loading ? (
-                <p className={theme === "dark" ? "text-white/45" : "text-slate-500"}>
-                  Загрузка...
-                </p>
-            ) : visibleNotes.length > 0 ? (
-                <div className="space-y-4">
-                  {visibleNotes.map((note) => {
-                    const noteColor = note.color || "default";
-                    const previewText = cleanNoteText(note.text);
+              <div className="grid grid-cols-2 gap-3 lg:block">
+                <button
+                    type="button"
+                    onClick={logout}
+                    className={`w-full rounded-2xl border px-5 py-3 transition lg:mb-4 ${
+                        theme === "dark"
+                            ? "border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                            : "border-slate-300 bg-white text-slate-800 hover:bg-slate-100"
+                    }`}
+                >
+                  Выйти
+                </button>
 
-                    return (
-                        <button
-                            type="button"
-                            key={note.id}
-                            onClick={() => setSelectedId(note.id)}
-                            className={`w-full rounded-3xl border p-5 text-left transition ${
-                                selectedId === note.id
+                <button
+                    type="button"
+                    onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+                    className={`mb-6 w-full rounded-2xl border px-5 py-3 transition lg:mb-8 ${
+                        theme === "dark"
+                            ? "border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                            : "border-slate-300 bg-white text-slate-800 hover:bg-slate-100"
+                    }`}
+                >
+                  {theme === "dark" ? "☀️ Светлая тема" : "🌙 Тёмная тема"}
+                </button>
+              </div>
+
+              <p
+                  className={`mb-3 text-sm ${
+                      theme === "dark" ? "text-white/35" : "text-slate-400"
+                  }`}
+              >
+                Фильтры
+              </p>
+
+              <div className="grid grid-cols-2 gap-2 lg:block lg:space-y-2">
+                {filters.map((item) => (
+                    <SidebarButton
+                        key={item}
+                        active={filter === item}
+                        onClick={() => setFilter(item)}
+                        theme={theme}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <span>{item}</span>
+
+                        <span
+                            className={`rounded-full px-2 py-0.5 text-xs ${
+                                filter === item
                                     ? theme === "dark"
-                                        ? "border-cyan-400/70 bg-cyan-400/15"
-                                        : "border-cyan-400 bg-cyan-50"
-                                    : getNoteColorClasses(noteColor, theme)
+                                        ? "bg-black/10 text-black"
+                                        : "bg-white/20 text-white"
+                                    : theme === "dark"
+                                        ? "bg-white/10 text-white/60"
+                                        : "bg-slate-200 text-slate-600"
                             }`}
                         >
-                          <div className="mb-3 flex justify-between gap-3">
-                            <h3 className="font-bold">
-                              {note.pinned && "📌 "}
-                              {note.title || "Без названия"}
-                            </h3>
+                      {getFilterCount(item)}
+                    </span>
+                      </div>
+                    </SidebarButton>
+                ))}
+              </div>
+            </aside>
 
-                            {note.favorite && (
-                                <span className="text-yellow-400">★</span>
-                            )}
-                          </div>
+            <section
+                className={`border-b p-4 lg:border-b-0 lg:border-r lg:p-6 ${
+                    theme === "dark"
+                        ? "border-white/10 bg-black/20"
+                        : "border-slate-200 bg-slate-50"
+                }`}
+            >
+              <h2 className="mb-4 text-3xl font-black">Мои заметки</h2>
 
-                          {note.image_url && (
-                              <img
-                                  src={note.image_url}
-                                  alt="Картинка заметки"
-                                  className="mb-4 h-28 w-full rounded-2xl object-cover"
-                              />
-                          )}
-
-                          <p
-                              className={`mb-4 line-clamp-2 text-sm ${
-                                  theme === "dark" ? "text-white/55" : "text-slate-500"
-                              }`}
-                          >
-                            {previewText || "Пустая заметка"}
-                          </p>
-
-                          <div
-                              className={`flex justify-end text-xs ${
-                                  theme === "dark" ? "text-white/40" : "text-slate-400"
-                              }`}
-                          >
-                            <span>{note.date || "Без даты"}</span>
-                          </div>
-                        </button>
-                    );
-                  })}
-                </div>
-            ) : (
-                <div
-                    className={`flex min-h-[300px] items-center justify-center rounded-3xl border border-dashed ${
+              <div className="relative mb-6">
+                <input
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Поиск заметок..."
+                    className={`w-full rounded-2xl border px-4 py-3 pr-12 outline-none ${
                         theme === "dark"
-                            ? "border-white/10 text-white/40"
-                            : "border-slate-300 text-slate-400"
+                            ? "border-white/10 bg-white/5 text-white placeholder:text-white/35"
+                            : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
                     }`}
-                >
-                  Создай первую заметку
-                </div>
-            )}
-          </section>
+                />
 
-          <section className="p-6 lg:p-10">
-            {selectedNote ? (
-                <div className="mx-auto max-w-4xl">
-                  <div className="mb-6 flex flex-col justify-between gap-4 lg:flex-row">
-                    <div
-                        className={
-                          theme === "dark" ? "text-white/45" : "text-slate-500"
-                        }
+                {search.length > 0 && (
+                    <button
+                        type="button"
+                        onClick={() => setSearch("")}
+                        className={`absolute right-3 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-full text-sm font-bold transition ${
+                            theme === "dark"
+                                ? "bg-white/10 text-white/70 hover:bg-white/20 hover:text-white"
+                                : "bg-slate-200 text-slate-600 hover:bg-slate-300 hover:text-slate-900"
+                        }`}
                     >
-                      {saveStatus === "saving" && "💾 Сохранение..."}
-                      {saveStatus === "saved" && "✅ Сохранено"}
-                      {saveStatus === "error" && "⚠️ Ошибка сохранения"}
-                    </div>
+                      ×
+                    </button>
+                )}
+              </div>
 
-                    <div className="flex gap-3">
-                      <button
-                          type="button"
-                          onClick={() => togglePinned(selectedNote.id)}
-                          className={`rounded-2xl p-3 transition ${
-                              theme === "dark"
-                                  ? "bg-white/5 hover:bg-white/10"
-                                  : "bg-white shadow-sm hover:bg-slate-100"
-                          }`}
-                      >
-                        📌
-                      </button>
+              {loading ? (
+                  <p
+                      className={theme === "dark" ? "text-white/45" : "text-slate-500"}
+                  >
+                    Загрузка...
+                  </p>
+              ) : visibleNotes.length > 0 ? (
+                  <div className="space-y-4">
+                    {visibleNotes.map((note) => {
+                      const noteColor = note.color || "default";
+                      const previewText = cleanNoteText(note.text);
 
-                      <button
-                          type="button"
-                          onClick={() => toggleFavorite(selectedNote.id)}
-                          className={`rounded-2xl p-3 transition ${
-                              theme === "dark"
-                                  ? "bg-white/5 hover:bg-white/10"
-                                  : "bg-white shadow-sm hover:bg-slate-100"
-                          }`}
-                      >
-                        ★
-                      </button>
+                      return (
+                          <button
+                              type="button"
+                              key={note.id}
+                              onClick={() => setSelectedId(note.id)}
+                              className={`w-full rounded-3xl border p-5 text-left transition ${
+                                  selectedId === note.id
+                                      ? theme === "dark"
+                                          ? "border-cyan-400/70 bg-cyan-400/15"
+                                          : "border-cyan-400 bg-cyan-50"
+                                      : getNoteColorClasses(noteColor, theme)
+                              }`}
+                          >
+                            <div className="mb-3 flex justify-between gap-3">
+                              <h3 className="font-bold">
+                                {note.pinned && "📌 "}
+                                {note.title || "Без названия"}
+                              </h3>
 
-                      <button
-                          type="button"
-                          onClick={() => toggleArchive(selectedNote.id)}
-                          className={`rounded-2xl p-3 transition ${
-                              theme === "dark"
-                                  ? "bg-white/5 hover:bg-white/10"
-                                  : "bg-white shadow-sm hover:bg-slate-100"
-                          }`}
-                      >
-                        📦
-                      </button>
+                              {note.favorite && (
+                                  <span className="text-yellow-400">★</span>
+                              )}
+                            </div>
 
-                      <button
-                          type="button"
-                          onClick={() => setDeleteModalOpen(true)}
-                          className="rounded-2xl bg-red-400/10 p-3 text-red-400 transition hover:bg-red-400/20"
-                      >
-                        🗑
-                      </button>
-                    </div>
+                            {note.image_url && (
+                                <img
+                                    src={note.image_url}
+                                    alt="Картинка заметки"
+                                    className="mb-4 h-28 w-full rounded-2xl object-cover"
+                                />
+                            )}
+
+                            <p
+                                className={`mb-4 line-clamp-2 text-sm ${
+                                    theme === "dark" ? "text-white/55" : "text-slate-500"
+                                }`}
+                            >
+                              {previewText || "Пустая заметка"}
+                            </p>
+
+                            <div
+                                className={`flex justify-end text-xs ${
+                                    theme === "dark" ? "text-white/40" : "text-slate-400"
+                                }`}
+                            >
+                              <span>{note.date || "Без даты"}</span>
+                            </div>
+                          </button>
+                      );
+                    })}
                   </div>
-
+              ) : (
                   <div
-                      className={`rounded-[32px] border p-6 lg:p-10 ${
-                          getNoteColorClasses(selectedNote.color || "default", theme)
+                      className={`flex min-h-[300px] items-center justify-center rounded-3xl border border-dashed ${
+                          theme === "dark"
+                              ? "border-white/10 text-white/40"
+                              : "border-slate-300 text-slate-400"
                       }`}
                   >
-                    <input
-                        value={selectedNote.title || ""}
-                        onChange={(e) => updateSelected("title", e.target.value)}
-                        placeholder="Название заметки"
-                        className={`mb-6 w-full bg-transparent text-4xl font-black outline-none ${
-                            theme === "dark"
-                                ? "placeholder:text-white/25"
-                                : "placeholder:text-slate-300"
-                        }`}
-                    />
+                    Создай первую заметку
+                  </div>
+              )}
+            </section>
 
-                    <div className="mb-6 grid gap-4 md:grid-cols-2">
+            <section className="p-4 lg:p-10">
+              {selectedNote ? (
+                  <div className="mx-auto max-w-4xl">
+                    <div className="mb-6 flex flex-col justify-between gap-4 lg:flex-row">
+                      <div
+                          className={
+                            theme === "dark" ? "text-white/45" : "text-slate-500"
+                          }
+                      >
+                        {saveStatus === "saving" && "💾 Сохранение..."}
+                        {saveStatus === "saved" && "✅ Сохранено"}
+                        {saveStatus === "error" && "⚠️ Ошибка сохранения"}
+                      </div>
+
+                      <div className="flex gap-3">
+                        <button
+                            type="button"
+                            onClick={() => togglePinned(selectedNote.id)}
+                            className={`rounded-2xl p-3 transition ${
+                                theme === "dark"
+                                    ? "bg-white/5 hover:bg-white/10"
+                                    : "bg-white shadow-sm hover:bg-slate-100"
+                            }`}
+                        >
+                          📌
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => toggleFavorite(selectedNote.id)}
+                            className={`rounded-2xl p-3 transition ${
+                                theme === "dark"
+                                    ? "bg-white/5 hover:bg-white/10"
+                                    : "bg-white shadow-sm hover:bg-slate-100"
+                            }`}
+                        >
+                          ★
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => toggleArchive(selectedNote.id)}
+                            className={`rounded-2xl p-3 transition ${
+                                theme === "dark"
+                                    ? "bg-white/5 hover:bg-white/10"
+                                    : "bg-white shadow-sm hover:bg-slate-100"
+                            }`}
+                        >
+                          📦
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => setDeleteModalOpen(true)}
+                            className="rounded-2xl bg-red-400/10 p-3 text-red-400 transition hover:bg-red-400/20"
+                        >
+                          🗑
+                        </button>
+                      </div>
+                    </div>
+
+                    <div
+                        className={`rounded-[32px] border p-6 lg:p-10 ${
+                            getNoteColorClasses(selectedNote.color || "default", theme)
+                        }`}
+                    >
                       <input
-                          value={selectedNote.date || ""}
-                          onChange={(e) => updateSelected("date", e.target.value)}
-                          placeholder="Дата"
-                          className={`rounded-2xl border px-4 py-3 outline-none ${
+                          value={selectedNote.title || ""}
+                          onChange={(e) => updateSelected("title", e.target.value)}
+                          placeholder="Название заметки"
+                          className={`mb-6 w-full bg-transparent text-3xl font-black outline-none lg:text-4xl ${
                               theme === "dark"
-                                  ? "border-white/10 bg-black/20 text-white placeholder:text-white/30"
+                                  ? "placeholder:text-white/25"
+                                  : "placeholder:text-slate-300"
+                          }`}
+                      />
+
+                      <div className="mb-6 grid gap-4 md:grid-cols-2">
+                        <input
+                            value={selectedNote.date || ""}
+                            onChange={(e) => updateSelected("date", e.target.value)}
+                            placeholder="Дата"
+                            className={`rounded-2xl border px-4 py-3 outline-none ${
+                                theme === "dark"
+                                    ? "border-white/10 bg-black/20 text-white placeholder:text-white/30"
+                                    : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
+                            }`}
+                        />
+
+                        <select
+                            value={selectedNote.color || "default"}
+                            onChange={(e) => updateSelected("color", e.target.value)}
+                            className={`rounded-2xl border px-4 py-3 outline-none ${
+                                theme === "dark"
+                                    ? "border-white/10 bg-black/20 text-white"
+                                    : "border-slate-200 bg-white text-slate-900"
+                            }`}
+                        >
+                          {colorLabels.map((color) => (
+                              <option key={color.value} value={color.value}>
+                                {color.label}
+                              </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <textarea
+                          value={cleanNoteText(selectedNote.text)}
+                          onChange={(e) => updateSelected("text", e.target.value)}
+                          placeholder="Напиши заметку..."
+                          className={`min-h-[240px] w-full resize-none rounded-3xl border p-4 text-base outline-none lg:min-h-[320px] lg:p-5 lg:text-lg ${
+                              theme === "dark"
+                                  ? "border-white/10 bg-black/20 text-white placeholder:text-white/25"
                                   : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
                           }`}
                       />
 
-                      <select
-                          value={selectedNote.color || "default"}
-                          onChange={(e) => updateSelected("color", e.target.value)}
-                          className={`rounded-2xl border px-4 py-3 outline-none ${
-                              theme === "dark"
-                                  ? "border-white/10 bg-black/20 text-white"
-                                  : "border-slate-200 bg-white text-slate-900"
-                          }`}
-                      >
-                        {colorLabels.map((color) => (
-                            <option key={color.value} value={color.value}>
-                              {color.label}
-                            </option>
-                        ))}
-                      </select>
-                    </div>
+                      <div className="mt-4 flex flex-wrap items-center gap-3">
+                        <label
+                            className={`cursor-pointer rounded-2xl border px-5 py-3 text-sm transition ${
+                                theme === "dark"
+                                    ? "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                            }`}
+                        >
+                          🖼 Загрузить изображение
+                          <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) void uploadImage(file);
+                              }}
+                              className="hidden"
+                          />
+                        </label>
 
-                    <textarea
-                        value={cleanNoteText(selectedNote.text)}
-                        onChange={(e) => updateSelected("text", e.target.value)}
-                        placeholder="Напиши заметку..."
-                        className={`min-h-[320px] w-full resize-none rounded-3xl border p-5 text-lg outline-none ${
-                            theme === "dark"
-                                ? "border-white/10 bg-black/20 text-white placeholder:text-white/25"
-                                : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
-                        }`}
-                    />
-
-                    <div className="mt-4 flex flex-wrap items-center gap-3">
-                      <label
-                          className={`cursor-pointer rounded-2xl border px-5 py-3 text-sm transition ${
-                              theme === "dark"
-                                  ? "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
-                                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
-                          }`}
-                      >
-                        🖼 Загрузить изображение
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) void uploadImage(file);
-                            }}
-                            className="hidden"
-                        />
-                      </label>
+                        {selectedNote.image_url && (
+                            <button
+                                type="button"
+                                onClick={removeImage}
+                                className="rounded-2xl border border-red-400/20 bg-red-400/10 px-5 py-3 text-sm text-red-400"
+                            >
+                              Удалить изображение
+                            </button>
+                        )}
+                      </div>
 
                       {selectedNote.image_url && (
-                          <button
-                              type="button"
-                              onClick={removeImage}
-                              className="rounded-2xl border border-red-400/20 bg-red-400/10 px-5 py-3 text-sm text-red-400"
-                          >
-                            Удалить изображение
-                          </button>
+                          <img
+                              src={selectedNote.image_url}
+                              alt="Картинка заметки"
+                              className="mt-5 max-h-[360px] rounded-3xl object-cover"
+                          />
                       )}
                     </div>
-
-                    {selectedNote.image_url && (
-                        <img
-                            src={selectedNote.image_url}
-                            alt="Картинка заметки"
-                            className="mt-5 max-h-[360px] rounded-3xl object-cover"
-                        />
-                    )}
                   </div>
-                </div>
-            ) : (
-                <div
-                    className={`flex h-full items-center justify-center ${
-                        theme === "dark" ? "text-white/50" : "text-slate-400"
-                    }`}
-                >
-                  Создай первую заметку
-                </div>
-            )}
-          </section>
-        </main>
-
-        {deleteModalOpen && selectedNote && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
-              <div
-                  className={`w-full max-w-md rounded-[32px] border p-7 shadow-2xl ${
-                      theme === "dark"
-                          ? "border-white/10 bg-[#10162a] text-white"
-                          : "border-slate-200 bg-white text-slate-900"
-                  }`}
-              >
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-400/10 text-2xl text-red-400">
-                  🗑
-                </div>
-
-                <h3 className="mb-3 text-2xl font-black">Удалить заметку?</h3>
-
-                <p
-                    className={`mb-6 leading-7 ${
-                        theme === "dark" ? "text-white/55" : "text-slate-500"
-                    }`}
-                >
-                  Заметка «{selectedNote.title || "Без названия"}» будет удалена.
-                  Это действие нельзя отменить.
-                </p>
-
-                <div className="flex justify-end gap-3">
-                  <button
-                      type="button"
-                      onClick={() => setDeleteModalOpen(false)}
-                      className={`rounded-2xl border px-5 py-3 font-bold transition ${
-                          theme === "dark"
-                              ? "border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
-                              : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+              ) : (
+                  <div
+                      className={`flex h-full items-center justify-center ${
+                          theme === "dark" ? "text-white/50" : "text-slate-400"
                       }`}
                   >
-                    Отмена
-                  </button>
+                    Создай первую заметку
+                  </div>
+              )}
+            </section>
+          </main>
 
-                  <button
-                      type="button"
-                      onClick={deleteSelected}
-                      className="rounded-2xl bg-red-500 px-5 py-3 font-bold text-white transition hover:bg-red-600"
+          {deleteModalOpen && selectedNote && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
+                <div
+                    className={`w-full max-w-md rounded-[32px] border p-7 shadow-2xl ${
+                        theme === "dark"
+                            ? "border-white/10 bg-[#10162a] text-white"
+                            : "border-slate-200 bg-white text-slate-900"
+                    }`}
+                >
+                  <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-400/10 text-2xl text-red-400">
+                    🗑
+                  </div>
+
+                  <h3 className="mb-3 text-2xl font-black">Удалить заметку?</h3>
+
+                  <p
+                      className={`mb-6 leading-7 ${
+                          theme === "dark" ? "text-white/55" : "text-slate-500"
+                      }`}
                   >
-                    Удалить
-                  </button>
+                    Заметка «{selectedNote.title || "Без названия"}» будет удалена.
+                    Это действие нельзя отменить.
+                  </p>
+
+                  <div className="flex justify-end gap-3">
+                    <button
+                        type="button"
+                        onClick={() => setDeleteModalOpen(false)}
+                        className={`rounded-2xl border px-5 py-3 font-bold transition ${
+                            theme === "dark"
+                                ? "border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                        }`}
+                    >
+                      Отмена
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={deleteSelected}
+                        className="rounded-2xl bg-red-500 px-5 py-3 font-bold text-white transition hover:bg-red-600"
+                    >
+                      Удалить
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </div>
-        )}
-
-        <div className="fixed bottom-6 right-6 z-40">
-          {quickMenuOpen && (
-              <div className="mb-4 flex flex-col items-end gap-3">
-                <button
-                    type="button"
-                    onClick={() =>
-                        createNote({
-                          title: "Новая заметка",
-                        })
-                    }
-                    className={`rounded-2xl px-4 py-3 text-sm font-bold shadow-lg transition ${
-                        theme === "dark"
-                            ? "bg-white text-slate-900 hover:bg-white/90"
-                            : "bg-slate-900 text-white hover:bg-slate-800"
-                    }`}
-                >
-                  Текстовая заметка
-                </button>
-
-                <button
-                    type="button"
-                    onClick={() =>
-                        createNote({
-                          title: "Важная заметка",
-                          pinned: true,
-                        })
-                    }
-                    className={`rounded-2xl px-4 py-3 text-sm font-bold shadow-lg transition ${
-                        theme === "dark"
-                            ? "bg-white text-slate-900 hover:bg-white/90"
-                            : "bg-slate-900 text-white hover:bg-slate-800"
-                    }`}
-                >
-                  Закреплённая заметка
-                </button>
-
-                <button
-                    type="button"
-                    onClick={() =>
-                        createNote({
-                          title: "Проектная заметка",
-                          tag: "Проекты",
-                          folder: "Проекты",
-                          color: "violet",
-                        })
-                    }
-                    className={`rounded-2xl px-4 py-3 text-sm font-bold shadow-lg transition ${
-                        theme === "dark"
-                            ? "bg-white text-slate-900 hover:bg-white/90"
-                            : "bg-slate-900 text-white hover:bg-slate-800"
-                    }`}
-                >
-                  Проектная заметка
-                </button>
               </div>
           )}
 
-          <button
-              type="button"
-              onClick={() => setQuickMenuOpen(!quickMenuOpen)}
-              className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-violet-500 to-pink-500 text-3xl font-black text-white shadow-[0_0_35px_rgba(139,92,246,0.55)] transition hover:scale-105"
-          >
-            {quickMenuOpen ? "×" : "+"}
-          </button>
-             </div>
+          <div className="fixed bottom-6 right-6 z-40">
+            {quickMenuOpen && (
+                <div className="mb-4 flex flex-col items-end gap-3">
+                  <button
+                      type="button"
+                      onClick={() =>
+                          createNote({
+                            title: "Новая заметка",
+                          })
+                      }
+                      className={`rounded-2xl px-4 py-3 text-sm font-bold shadow-lg transition ${
+                          theme === "dark"
+                              ? "bg-white text-slate-900 hover:bg-white/90"
+                              : "bg-slate-900 text-white hover:bg-slate-800"
+                      }`}
+                  >
+                    Текстовая заметка
+                  </button>
+
+                  <button
+                      type="button"
+                      onClick={() =>
+                          createNote({
+                            title: "Важная заметка",
+                            pinned: true,
+                          })
+                      }
+                      className={`rounded-2xl px-4 py-3 text-sm font-bold shadow-lg transition ${
+                          theme === "dark"
+                              ? "bg-white text-slate-900 hover:bg-white/90"
+                              : "bg-slate-900 text-white hover:bg-slate-800"
+                      }`}
+                  >
+                    Закреплённая заметка
+                  </button>
+
+                  <button
+                      type="button"
+                      onClick={() =>
+                          createNote({
+                            title: "Проектная заметка",
+                            tag: "Проекты",
+                            folder: "Проекты",
+                            color: "violet",
+                          })
+                      }
+                      className={`rounded-2xl px-4 py-3 text-sm font-bold shadow-lg transition ${
+                          theme === "dark"
+                              ? "bg-white text-slate-900 hover:bg-white/90"
+                              : "bg-slate-900 text-white hover:bg-slate-800"
+                      }`}
+                  >
+                    Проектная заметка
+                  </button>
+                </div>
+            )}
+
+            <button
+                type="button"
+                onClick={() => setQuickMenuOpen(!quickMenuOpen)}
+                className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-violet-500 to-pink-500 text-3xl font-black text-white shadow-[0_0_35px_rgba(139,92,246,0.55)] transition hover:scale-105"
+            >
+              {quickMenuOpen ? "×" : "+"}
+            </button>
+          </div>
         </div>
       </div>
   );
