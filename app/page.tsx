@@ -1019,6 +1019,20 @@ export default function NotesApp() {
                               className="hidden"
                           />
                         </label>
+                        <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(cleanNoteText(selectedNote.text));
+                              showNotice("Текст заметки скопирован", "success");
+                            }}
+                            className={`rounded-2xl border px-5 py-3 text-sm transition ${
+                                theme === "dark"
+                                    ? "border-white/10 bg-white/5 text-white/80 hover:bg-white/10"
+                                    : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                            }`}
+                        >
+                          📋 Скопировать текст
+                        </button>
 
                         {selectedNote.image_url && (
                             <button
