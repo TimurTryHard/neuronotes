@@ -121,6 +121,7 @@ function AuthScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -171,6 +172,8 @@ function AuthScreen() {
               {mode === "register" ? "Регистрация" : "Вход"}
             </h3>
 
+
+
             <form onSubmit={handleSubmit} className="mt-8 space-y-4">
               <input
                   value={email}
@@ -201,12 +204,12 @@ function AuthScreen() {
 
             <button
                 type="button"
-                onClick={() => setMode(mode === "register" ? "login" : "register")}
-                className="mt-5 w-full text-sm text-cyan-300"
+                onClick={() => {
+                  setMode("login");
+                }}
+                className="relative z-[9999] mt-5 w-full cursor-pointer rounded-2xl border border-cyan-300/30 bg-cyan-400/10 px-5 py-3 text-sm font-bold text-cyan-300"
             >
-              {mode === "register"
-                  ? "Уже есть аккаунт? Войти"
-                  : "Нет аккаунта? Зарегистрироваться"}
+              Уже есть аккаунт? Войти
             </button>
           </section>
         </main>
