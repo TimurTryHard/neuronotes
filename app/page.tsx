@@ -860,6 +860,8 @@ export default function NotesApp() {
                       <div className="flex gap-3">
                         <button
                             type="button"
+                            title={selectedNote.pinned ? "Открепить заметку" : "Закрепить заметку"}
+                            aria-label={selectedNote.pinned ? "Открепить заметку" : "Закрепить заметку"}
                             onClick={() => togglePinned(selectedNote.id)}
                             className={`rounded-2xl p-3 transition ${
                                 theme === "dark"
@@ -872,6 +874,12 @@ export default function NotesApp() {
 
                         <button
                             type="button"
+                            title={
+                              selectedNote.favorite ? "Убрать из избранного" : "Добавить в избранное"
+                            }
+                            aria-label={
+                              selectedNote.favorite ? "Убрать из избранного" : "Добавить в избранное"
+                            }
                             onClick={() => toggleFavorite(selectedNote.id)}
                             className={`rounded-2xl p-3 transition ${
                                 theme === "dark"
@@ -884,6 +892,12 @@ export default function NotesApp() {
 
                         <button
                             type="button"
+                            title={
+                              selectedNote.archived ? "Вернуть из архива" : "Переместить в архив"
+                            }
+                            aria-label={
+                              selectedNote.archived ? "Вернуть из архива" : "Переместить в архив"
+                            }
                             onClick={() => toggleArchive(selectedNote.id)}
                             className={`rounded-2xl p-3 transition ${
                                 theme === "dark"
@@ -896,6 +910,8 @@ export default function NotesApp() {
 
                         <button
                             type="button"
+                            title="Удалить заметку"
+                            aria-label="Удалить заметку"
                             onClick={() => setDeleteModalOpen(true)}
                             className="rounded-2xl bg-red-400/10 p-3 text-red-400 transition hover:bg-red-400/20"
                         >
