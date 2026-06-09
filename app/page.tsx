@@ -699,8 +699,50 @@ export default function NotesApp() {
                   >
                     Загрузка...
                   </p>
-              ) : visibleNotes.length > 0 ? (
+              ) : visibleNotes.length > 0 || search.trim().length > 0 || filter !== "Все" ? (
                   <div className="space-y-4">
+                    {visibleNotes.length === 0 && (
+                        <div
+                            className={`rounded-3xl border border-dashed p-6 text-center ${
+                                theme === "dark"
+                                    ? "border-white/10 bg-white/[0.03] text-white/45"
+                                    : "border-slate-200 bg-white text-slate-500"
+                            }`}
+                        >
+                          {search.trim().length > 0 || filter !== "Все" ? (
+                              <>
+                                <p className="mb-3 font-bold">Ничего не найдено</p>
+
+                                <p className="mb-4 text-sm">
+                                  Попробуй изменить поиск или сбросить фильтры.
+                                </p>
+
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSearch("");
+                                      setFilter("Все");
+                                    }}
+                                    className="rounded-2xl bg-gradient-to-r from-cyan-400 to-violet-500 px-4 py-2 text-sm font-bold text-black transition hover:scale-[1.02]"
+                                >
+                                  Сбросить
+                                </button>
+                              </>
+                          ) : (
+                              <>
+                                <p className="mb-4">Заметок пока нет</p>
+
+                                <button
+                                    type="button"
+                                    onClick={() => createNote()}
+                                    className="rounded-2xl bg-gradient-to-r from-cyan-400 to-violet-500 px-5 py-3 font-bold text-black transition hover:scale-[1.02]"
+                                >
+                                  Создать первую заметку
+                                </button>
+                              </>
+                          )}
+                        </div>
+                    )}
                     {visibleNotes.map((note) => {
                       const noteColor = note.color || "default";
                       const previewText = cleanNoteText(note.text);
