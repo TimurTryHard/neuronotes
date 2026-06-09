@@ -892,7 +892,16 @@ export default function NotesApp() {
                                   : "border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
                           }`}
                       />
-
+                      <div
+                          className={`mt-3 flex justify-end text-xs ${
+                              theme === "dark" ? "text-white/35" : "text-slate-400"
+                          }`}
+                      >
+                        Символов: {cleanNoteText(selectedNote.text).length} · Слов:{" "}
+                        {cleanNoteText(selectedNote.text).trim()
+                            ? cleanNoteText(selectedNote.text).trim().split(/\s+/).length
+                            : 0}
+                      </div>
                       <div className="mt-4 flex flex-wrap items-center gap-3">
                         <label
                             className={`cursor-pointer rounded-2xl border px-5 py-3 text-sm transition ${
