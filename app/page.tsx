@@ -864,9 +864,11 @@ export default function NotesApp() {
                             aria-label={selectedNote.pinned ? "Открепить заметку" : "Закрепить заметку"}
                             onClick={() => togglePinned(selectedNote.id)}
                             className={`rounded-2xl p-3 transition ${
-                                theme === "dark"
-                                    ? "bg-white/5 hover:bg-white/10"
-                                    : "bg-white shadow-sm hover:bg-slate-100"
+                                selectedNote.pinned
+                                    ? "bg-cyan-400/20 text-cyan-300 ring-1 ring-cyan-300/40"
+                                    : theme === "dark"
+                                        ? "bg-white/5 hover:bg-white/10"
+                                        : "bg-white shadow-sm hover:bg-slate-100"
                             }`}
                         >
                           📌
@@ -882,9 +884,11 @@ export default function NotesApp() {
                             }
                             onClick={() => toggleFavorite(selectedNote.id)}
                             className={`rounded-2xl p-3 transition ${
-                                theme === "dark"
-                                    ? "bg-white/5 hover:bg-white/10"
-                                    : "bg-white shadow-sm hover:bg-slate-100"
+                                selectedNote.favorite
+                                    ? "bg-yellow-400/20 text-yellow-300 ring-1 ring-yellow-300/40"
+                                    : theme === "dark"
+                                        ? "bg-white/5 hover:bg-white/10"
+                                        : "bg-white shadow-sm hover:bg-slate-100"
                             }`}
                         >
                           ★
@@ -900,9 +904,11 @@ export default function NotesApp() {
                             }
                             onClick={() => toggleArchive(selectedNote.id)}
                             className={`rounded-2xl p-3 transition ${
-                                theme === "dark"
-                                    ? "bg-white/5 hover:bg-white/10"
-                                    : "bg-white shadow-sm hover:bg-slate-100"
+                                selectedNote.archived
+                                    ? "bg-violet-400/20 text-violet-300 ring-1 ring-violet-300/40"
+                                    : theme === "dark"
+                                        ? "bg-white/5 hover:bg-white/10"
+                                        : "bg-white shadow-sm hover:bg-slate-100"
                             }`}
                         >
                           📦
