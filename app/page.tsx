@@ -230,8 +230,16 @@ export default function NotesApp() {
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">(
       "saved"
   );
+  const [notice, setNotice] = useState("");
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  function showNotice(message: string) {
+    setNotice(message);
+
+    setTimeout(() => {
+      setNotice("");
+    }, 3000);
+  }
 
   const loadNotes = useCallback(async (userId: string) => {
     setLoading(true);
@@ -345,7 +353,7 @@ export default function NotesApp() {
         .single();
 
     if (error) {
-      alert(error.message);
+      showNotice("Ошибка создания заметки: " + error.message);
       return;
     }
 
@@ -400,7 +408,7 @@ export default function NotesApp() {
         });
 
     if (uploadError) {
-      alert(uploadError.message);
+      showNotice("Ошибка загрузки изображения: " + uploadError.message);
       return;
     }
 
@@ -414,7 +422,7 @@ export default function NotesApp() {
         .eq("id", selectedNote.id);
 
     if (error) {
-      alert(error.message);
+      showNotice("Ошибка сохранения изображения: " + error.message);
       return;
     }
 
@@ -495,7 +503,7 @@ export default function NotesApp() {
         .eq("id", selectedNote.id);
 
     if (error) {
-      alert(error.message);
+      showNotice("Ошибка удаления изображения: " + error.message);
       return;
     }
 
@@ -983,6 +991,12 @@ export default function NotesApp() {
                     </button>
                   </div>
                 </div>
+              </div>
+          )}
+
+          {notice && (
+              <div className="fixed right-6 top-6 z-50 max-w-sm rounded-2xl border border-red-400/20 bg-red-500/90 px-5 py-4 text-sm font-bold text-white shadow-2xl">
+                {notice}
               </div>
           )}
 
