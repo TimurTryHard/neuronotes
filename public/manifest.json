@@ -1,12 +1,11 @@
 {
   "name": "NeuroNotes",
   "short_name": "NeuroNotes",
-  "description": "Приложение для хранения и управления заметками",
+  "description": "Приложение для заметок",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#070b18",
-  "theme_color": "#7c3aed",
-  "orientation": "portrait",
+  "theme_color": "#070b18",
   "icons": [
     {
       "src": "/icon-192.png",
