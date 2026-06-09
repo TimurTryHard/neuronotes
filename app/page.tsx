@@ -231,10 +231,12 @@ export default function NotesApp() {
       "saved"
   );
   const [notice, setNotice] = useState("");
+  const [noticeType, setNoticeType] = useState<"success" | "error">("success");
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  function showNotice(message: string) {
+  function showNotice(message: string, type: "success" | "error" = "success") {
     setNotice(message);
+    setNoticeType(type);
 
     setTimeout(() => {
       setNotice("");
@@ -353,13 +355,14 @@ export default function NotesApp() {
         .single();
 
     if (error) {
-      showNotice("Ошибка создания заметки: " + error.message);
+      showNotice("Ошибка создания заметки: " + error.message, "error");
       return;
     }
 
     setNotes((prev) => [data as Note, ...prev]);
     setSelectedId((data as Note).id);
     setQuickMenuOpen(false);
+    showNotice("Заметка создана", "success");
   }
 
   function updateSelected(
@@ -380,6 +383,7 @@ export default function NotesApp() {
                 : note
         )
     );
+
 
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
@@ -408,7 +412,7 @@ export default function NotesApp() {
         });
 
     if (uploadError) {
-      showNotice("Ошибка загрузки изображения: " + uploadError.message);
+      showNotice("Ошибка загрузки изображения: " + uploadError.message, "error");
       return;
     }
 
@@ -422,7 +426,7 @@ export default function NotesApp() {
         .eq("id", selectedNote.id);
 
     if (error) {
-      showNotice("Ошибка сохранения изображения: " + error.message);
+      showNotice("Ошибка сохранения изображения: " + error.message, "error");
       return;
     }
 
@@ -433,6 +437,7 @@ export default function NotesApp() {
                 : note
         )
     );
+    showNotice("Изображение загружено", "success");
   }
 
   async function toggleFavorite(id: number) {
@@ -492,6 +497,7 @@ export default function NotesApp() {
     setNotes(updated);
     setSelectedId(updated[0]?.id || null);
     setDeleteModalOpen(false);
+    showNotice("Заметка удалена", "success");
   }
 
   async function removeImage() {
@@ -503,7 +509,7 @@ export default function NotesApp() {
         .eq("id", selectedNote.id);
 
     if (error) {
-      showNotice("Ошибка удаления изображения: " + error.message);
+      showNotice("Ошибка удаления изображения: " + error.message, "error");
       return;
     }
 
@@ -512,7 +518,10 @@ export default function NotesApp() {
             note.id === selectedNote.id ? { ...note, image_url: null } : note
         )
     );
+    showNotice("Изображение удалено", "success");
   }
+
+
 
   async function logout() {
     await supabase.auth.signOut();
@@ -1056,8 +1065,16 @@ export default function NotesApp() {
           )}
 
           {notice && (
-              <div className="fixed right-6 top-6 z-50 max-w-sm rounded-2xl border border-red-400/20 bg-red-500/90 px-5 py-4 text-sm font-bold text-white shadow-2xl">
-                {notice}
+              <div className="fixed left-1/2 top-6 z-50 -translate-x-1/2">
+                <div
+                    className={`rounded-2xl border px-6 py-4 text-sm font-bold text-white shadow-2xl ${
+                        noticeType === "error"
+                            ? "border-red-400/20 bg-red-500/90"
+                            : "border-emerald-400/20 bg-emerald-500/90"
+                    }`}
+                >
+                  {notice}
+                </div>
               </div>
           )}
 
