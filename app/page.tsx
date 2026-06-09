@@ -740,13 +740,21 @@ export default function NotesApp() {
                   </div>
               ) : (
                   <div
-                      className={`flex min-h-[300px] items-center justify-center rounded-3xl border border-dashed ${
+                      className={`flex min-h-[300px] flex-col items-center justify-center gap-4 rounded-3xl border border-dashed ${
                           theme === "dark"
                               ? "border-white/10 text-white/40"
                               : "border-slate-300 text-slate-400"
                       }`}
                   >
-                    Создай первую заметку
+                    <p>Заметок пока нет</p>
+
+                    <button
+                        type="button"
+                        onClick={() => createNote()}
+                        className="rounded-2xl bg-gradient-to-r from-cyan-400 to-violet-500 px-5 py-3 font-bold text-black transition hover:scale-[1.02]"
+                    >
+                      Создать первую заметку
+                    </button>
                   </div>
               )}
             </section>
