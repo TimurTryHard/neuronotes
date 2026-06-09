@@ -654,7 +654,17 @@ export default function NotesApp() {
                         : "border-slate-200 bg-slate-50"
                 }`}
             >
-              <h2 className="mb-4 text-3xl font-black">Мои заметки</h2>
+              <div className="mb-4">
+                <h2 className="text-3xl font-black">Мои заметки</h2>
+
+                <p
+                    className={`mt-1 text-sm ${
+                        theme === "dark" ? "text-white/40" : "text-slate-500"
+                    }`}
+                >
+                  Найдено заметок: {visibleNotes.length}
+                </p>
+              </div>
 
               <div className="relative mb-6">
                 <input
