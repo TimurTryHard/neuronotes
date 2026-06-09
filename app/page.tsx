@@ -453,6 +453,11 @@ export default function NotesApp() {
             note.id === id ? { ...note, favorite: nextValue } : note
         )
     );
+
+    showNotice(
+        nextValue ? "Добавлено в избранное" : "Убрано из избранного",
+        "success"
+    );
   }
 
   async function toggleArchive(id: number) {
@@ -467,6 +472,11 @@ export default function NotesApp() {
         prev.map((note) =>
             note.id === id ? { ...note, archived: nextValue } : note
         )
+    );
+
+    showNotice(
+        nextValue ? "Заметка перемещена в архив" : "Заметка возвращена из архива",
+        "success"
     );
   }
 
@@ -484,6 +494,11 @@ export default function NotesApp() {
                 note.id === id ? { ...note, pinned: nextValue } : note
             )
             .sort((a, b) => Number(b.pinned) - Number(a.pinned))
+    );
+
+    showNotice(
+        nextValue ? "Заметка закреплена" : "Заметка откреплена",
+        "success"
     );
   }
 
