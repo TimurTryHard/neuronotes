@@ -514,16 +514,29 @@ export default function NotesApp() {
       return;
     }
 
+    const { error: imageTableError } = await supabase
+        .from("note_images")
+        .insert({
+          note_id: selectedNote.id,
+          image_url: publicUrl,
+        });
+
+    if (imageTableError) {
+      showNotice(
+          "Ошибка записи изображения в новую таблицу: " + imageTableError.message,
+          "error"
+      );
+      return;
+    }
+
     setNotes((prev) =>
         prev.map((note) =>
-            note.id === selectedNote.id
-                ? { ...note, image_url: publicUrl }
-                : note
+            note.id === selectedNote.id ? { ...note, image_url: publicUrl } : note
         )
     );
+
     showNotice("Изображение загружено", "success");
   }
-
   async function toggleFavorite(id: number) {
     const current = notes.find((note) => note.id === id);
     if (!current) return;
@@ -609,6 +622,18 @@ export default function NotesApp() {
 
     if (error) {
       showNotice("Ошибка удаления изображения: " + error.message, "error");
+      return;
+    }
+    const { error: deleteImageTableError } = await supabase
+        .from("note_images")
+        .delete()
+        .eq("note_id", selectedNote.id);
+
+    if (deleteImageTableError) {
+      showNotice(
+          "Ошибка удаления изображения из новой таблицы: " + deleteImageTableError.message,
+          "error"
+      );
       return;
     }
 
