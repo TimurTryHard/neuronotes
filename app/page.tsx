@@ -322,7 +322,87 @@ export default function NotesApp() {
         })
         .sort((a, b) => Number(b.pinned) - Number(a.pinned));
   }, [notes, search, filter]);
+  async function ensureFolderAndTag(
+      noteId: number,
+      folderName: string,
+      tagName: string
+  ) {
+    if (!user) return;
 
+    const finalFolderName = folderName.trim() || "Личное";
+    const finalTagName = tagName.trim() || "Без тега";
+
+    const { data: folderData } = await supabase
+        .from("folders")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("name", finalFolderName)
+        .maybeSingle();
+
+    let folderId = folderData?.id;
+
+    if (!folderId) {
+      const { data: createdFolder, error: folderError } = await supabase
+          .from("folders")
+          .insert({
+            user_id: user.id,
+            name: finalFolderName,
+          })
+          .select("id")
+          .single();
+
+      if (folderError) {
+        showNotice("Ошибка создания папки: " + folderError.message, "error");
+        return;
+      }
+
+      folderId = createdFolder.id;
+    }
+
+    const { data: tagData } = await supabase
+        .from("tags")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("name", finalTagName)
+        .maybeSingle();
+
+    let tagId = tagData?.id;
+
+    if (!tagId) {
+      const { data: createdTag, error: tagError } = await supabase
+          .from("tags")
+          .insert({
+            user_id: user.id,
+            name: finalTagName,
+          })
+          .select("id")
+          .single();
+
+      if (tagError) {
+        showNotice("Ошибка создания тега: " + tagError.message, "error");
+        return;
+      }
+
+      tagId = createdTag.id;
+    }
+
+    await supabase
+        .from("notes")
+        .update({
+          folder_id: folderId,
+        })
+        .eq("id", noteId);
+
+    await supabase.from("note_tags").upsert(
+        {
+          note_id: noteId,
+          tag_id: tagId,
+        },
+        {
+          onConflict: "note_id,tag_id",
+        }
+    );
+  }
   async function createNote(
       options: {
         title?: string;
@@ -358,7 +438,11 @@ export default function NotesApp() {
       showNotice("Ошибка создания заметки: " + error.message, "error");
       return;
     }
-
+    await ensureFolderAndTag(
+        (data as Note).id,
+        newNote.folder,
+        newNote.tag
+    );
     setNotes((prev) => [data as Note, ...prev]);
     setSelectedId((data as Note).id);
     setQuickMenuOpen(false);
