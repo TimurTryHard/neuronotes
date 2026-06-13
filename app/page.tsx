@@ -259,9 +259,40 @@ export default function NotesApp() {
       return;
     }
 
-    const cleanedNotes = ((data || []) as Note[]).map((note) => ({
+    const rawNotes = (data || []) as Note[];
+    const noteIds = rawNotes.map((note) => note.id);
+
+    let imageRows: { note_id: number; image_url: string | null }[] = [];
+
+    if (noteIds.length > 0) {
+      const { data: imagesData, error: imagesError } = await supabase
+          .from("note_images")
+          .select("note_id, image_url")
+          .in("note_id", noteIds)
+          .order("created_at", { ascending: false });
+
+      if (imagesError) {
+        console.error("Ошибка загрузки изображений:", imagesError.message);
+      } else {
+        imageRows = (imagesData || []) as {
+          note_id: number;
+          image_url: string | null;
+        }[];
+      }
+    }
+
+    const imageByNoteId = new Map<number, string>();
+
+    imageRows.forEach((image) => {
+      if (!imageByNoteId.has(image.note_id) && image.image_url) {
+        imageByNoteId.set(image.note_id, image.image_url);
+      }
+    });
+
+    const cleanedNotes = rawNotes.map((note) => ({
       ...note,
       text: cleanNoteText(note.text),
+      image_url: imageByNoteId.get(note.id) || note.image_url,
     }));
 
     setNotes(cleanedNotes);
