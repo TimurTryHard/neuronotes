@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import type React from "react";
 import type { ReactNode } from "react";
@@ -18,17 +18,48 @@ type Note = {
   user_id: string;
   title: string | null;
   text: string | null;
-  tag: string | null;
   folder: string | null;
+  folder_id: number | null;
   date: string | null;
   favorite: boolean;
   archived: boolean;
+  deleted: boolean | null;
   color: NoteColor | null;
   pinned: boolean;
   image_url: string | null;
 };
+type Folder = {
+  id: number;
+  user_id: string;
+  name: string;
+  created_at: string | null;
+};
 
 const oldDefaultText = "Начни писать здесь...";
+const defaultFolderName = "\u041b\u0438\u0447\u043d\u043e\u0435";
+const allFoldersFilter = "\u0412\u0441\u0435 \u043f\u0430\u043f\u043a\u0438";
+const allNotesFilter = "\u0412\u0441\u0435";
+const pinnedFilter = "\u0417\u0430\u043a\u0440\u0435\u043f\u043b\u0451\u043d\u043d\u044b\u0435";
+const favoriteFilter = "\u0418\u0437\u0431\u0440\u0430\u043d\u043d\u043e\u0435";
+const archiveFilter = "\u0410\u0440\u0445\u0438\u0432";
+const trashFilter = "\u041a\u043e\u0440\u0437\u0438\u043d\u0430";
+const foldersLabel = "\u041f\u0430\u043f\u043a\u0438";
+const folderLabel = "\u041f\u0430\u043f\u043a\u0430";
+const organizationUpdatedMessage =
+    "\u041f\u0430\u043f\u043a\u0430 \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0430";
+const movedToTrashMessage =
+    "\u0417\u0430\u043c\u0435\u0442\u043a\u0430 \u043f\u0435\u0440\u0435\u043c\u0435\u0449\u0435\u043d\u0430 \u0432 \u043a\u043e\u0440\u0437\u0438\u043d\u0443";
+const restoredFromTrashMessage =
+    "\u0417\u0430\u043c\u0435\u0442\u043a\u0430 \u0432\u043e\u0441\u0441\u0442\u0430\u043d\u043e\u0432\u043b\u0435\u043d\u0430";
+const permanentlyDeletedMessage =
+    "\u0417\u0430\u043c\u0435\u0442\u043a\u0430 \u0443\u0434\u0430\u043b\u0435\u043d\u0430 \u043d\u0430\u0432\u0441\u0435\u0433\u0434\u0430";
+const deleteFolderTitle = "\u0423\u0434\u0430\u043b\u0438\u0442\u044c \u043f\u0430\u043f\u043a\u0443?";
+const deleteFolderDescription =
+    "\u0417\u0430\u043c\u0435\u0442\u043a\u0438 \u043d\u0435 \u0443\u0434\u0430\u043b\u044f\u0442\u0441\u044f, \u043e\u043d\u0438 \u0431\u0443\u0434\u0443\u0442 \u043f\u0435\u0440\u0435\u043d\u0435\u0441\u0435\u043d\u044b \u0432 \u00ab\u041b\u0438\u0447\u043d\u043e\u0435\u00bb.";
+const deleteFolderButtonLabel = "\u0423\u0434\u0430\u043b\u0438\u0442\u044c";
+const cancelButtonLabel = "\u041e\u0442\u043c\u0435\u043d\u0430";
+const folderDeletedMessage =
+    "\u041f\u0430\u043f\u043a\u0430 \u0443\u0434\u0430\u043b\u0435\u043d\u0430";
 
 function cleanNoteText(text: string | null) {
   return text === oldDefaultText ? "" : text || "";
@@ -81,7 +112,7 @@ function getNoteColorClasses(color: NoteColor, theme: Theme) {
 function LogoIcon() {
   return (
       <div className="flex h-14 w-14 items-center justify-center rounded-[20px] bg-gradient-to-br from-cyan-400 via-violet-500 to-pink-500 text-lg font-black text-white shadow-[0_0_35px_rgba(139,92,246,0.45)]">
-        N✦
+        N+
       </div>
   );
 }
@@ -220,26 +251,29 @@ function AuthScreen() {
 export default function NotesApp() {
   const [user, setUser] = useState<User | null>(null);
   const [notes, setNotes] = useState<Note[]>([]);
+  const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("Все");
+  const [folderFilter, setFolderFilter] = useState(allFoldersFilter);
+  const [filter, setFilter] = useState(allNotesFilter);
   const [loading, setLoading] = useState(false);
   const [theme, setTheme] = useState<Theme>("dark");
   const [quickMenuOpen, setQuickMenuOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [folderToDelete, setFolderToDelete] = useState<Folder | null>(null);
   const [saveStatus, setSaveStatus] = useState<"saved" | "saving" | "error">(
       "saved"
   );
-  const [notice, setNotice] = useState("");
-  const [noticeType, setNoticeType] = useState<"success" | "error">("success");
+  const [notice, setotice] = useState("");
+  const [noticeType, setoticeType] = useState<"success" | "error">("success");
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   function showNotice(message: string, type: "success" | "error" = "success") {
-    setNotice(message);
-    setNoticeType(type);
+    setotice(message);
+    setoticeType(type);
 
     setTimeout(() => {
-      setNotice("");
+      setotice("");
     }, 3000);
   }
 
@@ -279,6 +313,7 @@ export default function NotesApp() {
           image_url: string | null;
         }[];
       }
+
     }
 
     const imageByNoteId = new Map<number, string>();
@@ -299,6 +334,20 @@ export default function NotesApp() {
     setSelectedId(cleanedNotes[0]?.id || null);
     setLoading(false);
   }, []);
+  const loadFolders = useCallback(async (userId: string) => {
+    const { data, error } = await supabase
+        .from("folders")
+        .select("*")
+        .eq("user_id", userId)
+        .order("name", { ascending: true });
+
+    if (error) {
+      console.error("Ошибка загрузки папок:", error.message);
+      return;
+    }
+
+    setFolders((data || []) as Folder[]);
+  }, []);
 
   useEffect(() => {
     void supabase.auth.getUser().then(({ data }) => {
@@ -306,6 +355,7 @@ export default function NotesApp() {
 
       if (data.user) {
         void loadNotes(data.user.id);
+        void loadFolders(data.user.id);
       }
     });
 
@@ -317,8 +367,10 @@ export default function NotesApp() {
 
           if (currentUser) {
             void loadNotes(currentUser.id);
+            void loadFolders(currentUser.id);
           } else {
             setNotes([]);
+            setFolders([]);
             setSelectedId(null);
           }
         }
@@ -327,16 +379,14 @@ export default function NotesApp() {
     return () => {
       listener.subscription.unsubscribe();
     };
-  }, [loadNotes]);
-
-  const selectedNote =
-      notes.find((note) => note.id === selectedId) || notes[0] || null;
-
+  }, [loadNotes, loadFolders]);
   const visibleNotes = useMemo(() => {
     return notes
         .filter((note) => {
           const q = search.toLowerCase();
           const noteText = cleanNoteText(note.text);
+          const isTrashFilter = filter === trashFilter;
+          const isDeleted = Boolean(note.deleted);
 
           const matchesSearch =
               !q ||
@@ -344,24 +394,33 @@ export default function NotesApp() {
               noteText.toLowerCase().includes(q);
 
           const matchesMainFilter =
-              filter === "Все" ||
-              (filter === "Закреплённые" && note.pinned) ||
-              (filter === "Избранное" && note.favorite) ||
-              (filter === "Архив" && note.archived);
+              filter === allNotesFilter ||
+              (filter === pinnedFilter && note.pinned) ||
+              (filter === favoriteFilter && note.favorite) ||
+              (filter === archiveFilter && note.archived) ||
+              isTrashFilter;
 
-          return matchesSearch && matchesMainFilter;
+          const matchesFolderFilter =
+              folderFilter === allFoldersFilter || note.folder === folderFilter;
+
+          return (
+              matchesSearch &&
+              matchesMainFilter &&
+              matchesFolderFilter &&
+              (isTrashFilter ? isDeleted : !isDeleted)
+          );
         })
         .sort((a, b) => Number(b.pinned) - Number(a.pinned));
-  }, [notes, search, filter]);
-  async function ensureFolderAndTag(
+  }, [notes, search, filter, folderFilter]);
+  const selectedNote =
+      visibleNotes.find((note) => note.id === selectedId) || visibleNotes[0] || null;
+  async function ensureFolder(
       noteId: number,
-      folderName: string,
-      tagName: string
+      folderName: string
   ) {
-    if (!user) return;
+    if (!user) return null;
 
     const finalFolderName = folderName.trim() || "Личное";
-    const finalTagName = tagName.trim() || "Без тега";
 
     const { data: folderData } = await supabase
         .from("folders")
@@ -384,60 +443,30 @@ export default function NotesApp() {
 
       if (folderError) {
         showNotice("Ошибка создания папки: " + folderError.message, "error");
-        return;
+        return null;
       }
 
       folderId = createdFolder.id;
     }
 
-    const { data: tagData } = await supabase
-        .from("tags")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("name", finalTagName)
-        .maybeSingle();
-
-    let tagId = tagData?.id;
-
-    if (!tagId) {
-      const { data: createdTag, error: tagError } = await supabase
-          .from("tags")
-          .insert({
-            user_id: user.id,
-            name: finalTagName,
-          })
-          .select("id")
-          .single();
-
-      if (tagError) {
-        showNotice("Ошибка создания тега: " + tagError.message, "error");
-        return;
-      }
-
-      tagId = createdTag.id;
-    }
-
-    await supabase
+    const { error: noteError } = await supabase
         .from("notes")
         .update({
           folder_id: folderId,
+          folder: finalFolderName,
         })
         .eq("id", noteId);
 
-    await supabase.from("note_tags").upsert(
-        {
-          note_id: noteId,
-          tag_id: tagId,
-        },
-        {
-          onConflict: "note_id,tag_id",
-        }
-    );
+    if (noteError) {
+      showNotice("Ошибка обновления папки: " + noteError.message, "error");
+      return null;
+    }
+
+    return { folderId, folderName: finalFolderName };
   }
   async function createNote(
       options: {
         title?: string;
-        tag?: string;
         folder?: string;
         pinned?: boolean;
         color?: NoteColor;
@@ -449,7 +478,6 @@ export default function NotesApp() {
       user_id: user.id,
       title: options.title || "Новая заметка",
       text: "",
-      tag: options.tag || "Без тега",
       folder: options.folder || "Личное",
       date: formatDateTime(),
       favorite: false,
@@ -469,12 +497,22 @@ export default function NotesApp() {
       showNotice("Ошибка создания заметки: " + error.message, "error");
       return;
     }
-    await ensureFolderAndTag(
+    const organization = await ensureFolder(
         (data as Note).id,
-        newNote.folder,
-        newNote.tag
+        newNote.folder
     );
-    setNotes((prev) => [data as Note, ...prev]);
+    const createdNote = {
+      ...(data as Note),
+      folder_id: organization?.folderId || (data as Note).folder_id,
+      folder: organization?.folderName || newNote.folder,
+      deleted: false,
+    };
+
+    if (user) {
+      void loadFolders(user.id);
+    }
+
+    setNotes((prev) => [createdNote, ...prev]);
     setSelectedId((data as Note).id);
     setQuickMenuOpen(false);
     showNotice("Заметка создана", "success");
@@ -512,6 +550,93 @@ export default function NotesApp() {
 
       setSaveStatus(error ? "error" : "saved");
     }, 700);
+  }
+
+  async function updateSelectedOrganization(
+      value: string
+  ) {
+    if (!selectedNote || !user) return;
+
+    const organization = await ensureFolder(
+        selectedNote.id,
+        value
+    );
+
+    if (!organization) return;
+
+    setNotes((prev) =>
+        prev.map((note) =>
+            note.id === selectedNote.id
+                ? {
+                  ...note,
+                  folder_id: organization.folderId,
+                  folder: organization.folderName,
+                  date: formatDateTime(),
+                }
+                : note
+        )
+    );
+
+    void loadFolders(user.id);
+    showNotice(organizationUpdatedMessage, "success");
+  }
+
+  async function deleteFolder(folder: Folder) {
+    if (!user || folder.name === defaultFolderName) return;
+
+    const moveToDefault = {
+      folder_id: null,
+      folder: defaultFolderName,
+    };
+
+    const { error: folderIdError } = await supabase
+        .from("notes")
+        .update(moveToDefault)
+        .eq("user_id", user.id)
+        .eq("folder_id", folder.id);
+
+    if (folderIdError) {
+      showNotice(folderIdError.message, "error");
+      return;
+    }
+
+    const { error: folderNameError } = await supabase
+        .from("notes")
+        .update(moveToDefault)
+        .eq("user_id", user.id)
+        .eq("folder", folder.name);
+
+    if (folderNameError) {
+      showNotice(folderNameError.message, "error");
+      return;
+    }
+
+    const { error: deleteError } = await supabase
+        .from("folders")
+        .delete()
+        .eq("id", folder.id)
+        .eq("user_id", user.id);
+
+    if (deleteError) {
+      showNotice(deleteError.message, "error");
+      return;
+    }
+
+    setNotes((prev) =>
+        prev.map((note) =>
+            note.folder_id === folder.id || note.folder === folder.name
+                ? { ...note, folder_id: null, folder: defaultFolderName }
+                : note
+        )
+    );
+    setFolders((prev) => prev.filter((item) => item.id !== folder.id));
+
+    if (folderFilter === folder.name) {
+      setFolderFilter(allFoldersFilter);
+    }
+
+    setFolderToDelete(null);
+    showNotice(folderDeletedMessage, "success");
   }
 
   async function uploadImage(file: File) {
@@ -633,14 +758,73 @@ export default function NotesApp() {
   async function deleteSelected() {
     if (!selectedNote) return;
 
-    await supabase.from("notes").delete().eq("id", selectedNote.id);
+    if (selectedNote.deleted) {
+      await permanentlyDeleteSelected();
+      return;
+    }
+
+    const { error } = await supabase
+        .from("notes")
+        .update({ deleted: true })
+        .eq("id", selectedNote.id);
+
+    if (error) {
+      showNotice(error.message, "error");
+      return;
+    }
+
+    const updated = notes.map((note) =>
+        note.id === selectedNote.id ? { ...note, deleted: true } : note
+    );
+    const nextVisible = updated.filter((note) =>
+        filter === trashFilter ? note.deleted : !note.deleted
+    );
+
+    setNotes(updated);
+    setSelectedId(nextVisible[0]?.id || null);
+    setDeleteModalOpen(false);
+    showNotice(movedToTrashMessage, "success");
+  }
+
+  async function restoreSelected() {
+    if (!selectedNote) return;
+
+    const { error } = await supabase
+        .from("notes")
+        .update({ deleted: false })
+        .eq("id", selectedNote.id);
+
+    if (error) {
+      showNotice(error.message, "error");
+      return;
+    }
+
+    const updated = notes.map((note) =>
+        note.id === selectedNote.id ? { ...note, deleted: false } : note
+    );
+    const nextDeleted = updated.filter((note) => note.deleted);
+
+    setNotes(updated);
+    setSelectedId(filter === trashFilter ? nextDeleted[0]?.id || null : selectedNote.id);
+    showNotice(restoredFromTrashMessage, "success");
+  }
+
+  async function permanentlyDeleteSelected() {
+    if (!selectedNote) return;
+
+    const { error } = await supabase.from("notes").delete().eq("id", selectedNote.id);
+
+    if (error) {
+      showNotice(error.message, "error");
+      return;
+    }
 
     const updated = notes.filter((note) => note.id !== selectedNote.id);
 
     setNotes(updated);
-    setSelectedId(updated[0]?.id || null);
+    setSelectedId(updated.find((note) => note.deleted)?.id || updated[0]?.id || null);
     setDeleteModalOpen(false);
-    showNotice("Заметка удалена", "success");
+    showNotice(permanentlyDeletedMessage, "success");
   }
 
   async function removeImage() {
@@ -682,21 +866,39 @@ export default function NotesApp() {
     await supabase.auth.signOut();
   }
 
-  const filters = ["Все", "Закреплённые", "Избранное", "Архив"];
+  const filters = [
+    allNotesFilter,
+    pinnedFilter,
+    favoriteFilter,
+    archiveFilter,
+    trashFilter,
+  ];
 
-  function getFilterCount(filterName: string) {
-    switch (filterName) {
-      case "Все":
-        return notes.length;
+  const folderNames = Array.from(
+      new Set([
+        ...folders.map((folder) => folder.name),
+        ...notes
+            .map((note) => note.folder)
+            .filter((folder): folder is string => Boolean(folder?.trim())),
+      ])
+  ).sort((a, b) => a.localeCompare(b, "ru"));
 
-      case "Закреплённые":
-        return notes.filter((note) => note.pinned).length;
+  function getFilterCount(filterame: string) {
+    switch (filterame) {
+      case allNotesFilter:
+        return notes.filter((note) => !note.deleted).length;
 
-      case "Избранное":
-        return notes.filter((note) => note.favorite).length;
+      case pinnedFilter:
+        return notes.filter((note) => note.pinned && !note.deleted).length;
 
-      case "Архив":
-        return notes.filter((note) => note.archived).length;
+      case favoriteFilter:
+        return notes.filter((note) => note.favorite && !note.deleted).length;
+
+      case archiveFilter:
+        return notes.filter((note) => note.archived && !note.deleted).length;
+
+      case trashFilter:
+        return notes.filter((note) => note.deleted).length;
 
       default:
         return 0;
@@ -809,6 +1011,92 @@ export default function NotesApp() {
                     </SidebarButton>
                 ))}
               </div>
+        <div className="mt-8">
+          <p
+              className={`mb-3 text-sm ${
+                  theme === "dark" ? "text-white/35" : "text-slate-400"
+              }`}
+          >
+            Папки
+          </p>
+
+          <div className="space-y-2">
+            {folders.length > 0 ? (
+                folders.map((folder) => (
+                    <div
+                        key={folder.id}
+                        className={`flex items-center gap-2 rounded-2xl px-3 py-2 text-[0px] ${
+                            theme === "dark"
+                                ? "bg-white/5 text-white/65"
+                                : "bg-slate-100 text-slate-600"
+                        }`}
+                    >
+                      <button
+                          type="button"
+                          onClick={() => setFolderFilter(folder.name)}
+                          className="min-w-0 flex-1 truncate px-1 py-1 text-left text-sm"
+                          title={folder.name}
+                      >
+                        {folder.name}
+                      </button>
+
+                      {folder.name !== defaultFolderName && (
+                          <button
+                              type="button"
+                              onClick={() => setFolderToDelete(folder)}
+                              title="Удалить папку"
+                              aria-label="Удалить папку"
+                              className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-base transition ${
+                                  theme === "dark"
+                                      ? "text-red-300 hover:bg-red-400/10"
+                                      : "text-red-500 hover:bg-red-50"
+                              }`}
+                          >
+                            ×
+                          </button>
+                      )}
+                      📁 {folder.name}
+                    </div>
+                ))
+            ) : (
+                <p
+                    className={`text-sm ${
+                        theme === "dark" ? "text-white/30" : "text-slate-400"
+                    }`}
+                >
+                  Папок пока нет
+                </p>
+            )}
+          </div>
+        </div>
+
+
+              <div className="mt-6">
+                <p
+                    className={`mb-3 text-sm ${
+                        theme === "dark" ? "text-white/35" : "text-slate-400"
+                    }`}
+                >
+                  {foldersLabel}
+                </p>
+
+                <select
+                    value={folderFilter}
+                    onChange={(e) => setFolderFilter(e.target.value)}
+                    className={`w-full rounded-2xl border px-4 py-3 outline-none ${
+                        theme === "dark"
+                            ? "border-white/10 bg-black/20 text-white"
+                            : "border-slate-200 bg-white text-slate-900"
+                    }`}
+                >
+                  <option value={allFoldersFilter}>{allFoldersFilter}</option>
+                  {folderNames.map((folderName) => (
+                      <option key={folderName} value={folderName}>
+                        {folderName}
+                      </option>
+                  ))}
+                </select>
+              </div>
             </aside>
 
             <section
@@ -852,7 +1140,7 @@ export default function NotesApp() {
                                 : "bg-slate-200 text-slate-600 hover:bg-slate-300 hover:text-slate-900"
                         }`}
                     >
-                      ×
+                      ?
                     </button>
                 )}
               </div>
@@ -863,7 +1151,7 @@ export default function NotesApp() {
                   >
                     Загрузка...
                   </p>
-              ) : visibleNotes.length > 0 || search.trim().length > 0 || filter !== "Все" ? (
+              ) : visibleNotes.length > 0 || search.trim().length > 0 || filter !== allNotesFilter ? (
                   <div className="space-y-4">
                     {visibleNotes.length === 0 && (
                         <div
@@ -873,7 +1161,7 @@ export default function NotesApp() {
                                     : "border-slate-200 bg-white text-slate-500"
                             }`}
                         >
-                          {search.trim().length > 0 || filter !== "Все" ? (
+                          {search.trim().length > 0 || filter !== allNotesFilter ? (
                               <>
                                 <p className="mb-3 font-bold">Ничего не найдено</p>
 
@@ -885,7 +1173,7 @@ export default function NotesApp() {
                                     type="button"
                                     onClick={() => {
                                       setSearch("");
-                                      setFilter("Все");
+                                      setFilter(allNotesFilter);
                                     }}
                                     className="rounded-2xl bg-gradient-to-r from-cyan-400 to-violet-500 px-4 py-2 text-sm font-bold text-black transition hover:scale-[1.02]"
                                 >
@@ -998,6 +1286,18 @@ export default function NotesApp() {
                       </div>
 
                       <div className="flex gap-3">
+                        {selectedNote.deleted && (
+                            <button
+                                type="button"
+                                title="Восстановить заметку"
+                                aria-label="Восстановить заметку"
+                                onClick={restoreSelected}
+                                className="rounded-2xl bg-emerald-400/10 px-4 py-3 text-sm font-bold text-emerald-300 ring-1 ring-emerald-300/30 transition hover:bg-emerald-400/20"
+                            >
+                              Восстановить
+                            </button>
+                        )}
+
                         <button
                             type="button"
                             title={selectedNote.pinned ? "Открепить заметку" : "Закрепить заметку"}
@@ -1082,7 +1382,7 @@ export default function NotesApp() {
                           }`}
                       />
 
-                      <div className="mb-6 grid gap-4 md:grid-cols-2">
+                      <div className="mb-6">
                         <div
                             className={`rounded-2xl border px-4 py-3 ${
                                 theme === "dark"
@@ -1118,6 +1418,51 @@ export default function NotesApp() {
                               </option>
                           ))}
                         </select>
+                      </div>
+
+                      <div className="mb-6 grid gap-4 md:grid-cols-2">
+                        <label
+                            className={`block rounded-2xl border px-4 py-3 ${
+                                theme === "dark"
+                                    ? "border-white/10 bg-black/20 text-white"
+                                    : "border-slate-200 bg-white text-slate-900"
+                            }`}
+                        >
+                          <span
+                              className={`mb-2 block text-xs ${
+                                  theme === "dark" ? "text-white/35" : "text-slate-400"
+                              }`}
+                          >
+                            {folderLabel}
+                          </span>
+
+                          <input
+                              value={selectedNote.folder || ""}
+                              onChange={(e) => {
+                                const nextFolder = e.target.value;
+
+                                setNotes((prev) =>
+                                    prev.map((note) =>
+                                        note.id === selectedNote.id
+                                            ? { ...note, folder: nextFolder }
+                                            : note
+                                    )
+                                );
+                              }}
+                              onBlur={(e) =>
+                                  void updateSelectedOrganization(e.currentTarget.value)
+                              }
+                              list="folder-options"
+                              placeholder={defaultFolderName}
+                              className="w-full bg-transparent outline-none"
+                          />
+                        </label>
+
+                        <datalist id="folder-options">
+                          {folderNames.map((folderName) => (
+                              <option key={folderName} value={folderName} />
+                          ))}
+                        </datalist>
                       </div>
 
                       <textarea
@@ -1255,6 +1600,54 @@ export default function NotesApp() {
               </div>
           )}
 
+          {folderToDelete && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 backdrop-blur-sm">
+                <div
+                    className={`w-full max-w-md rounded-[32px] border p-7 shadow-2xl ${
+                        theme === "dark"
+                            ? "border-white/10 bg-[#10162a] text-white"
+                            : "border-slate-200 bg-white text-slate-900"
+                    }`}
+                >
+                  <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-400/10 text-2xl text-red-400">
+                    ?
+                  </div>
+
+                  <h3 className="mb-3 text-2xl font-black">{deleteFolderTitle}</h3>
+
+                  <p
+                      className={`mb-6 leading-7 ${
+                          theme === "dark" ? "text-white/55" : "text-slate-500"
+                      }`}
+                  >
+                    {deleteFolderDescription}
+                  </p>
+
+                  <div className="flex justify-end gap-3">
+                    <button
+                        type="button"
+                        onClick={() => setFolderToDelete(null)}
+                        className={`rounded-2xl border px-5 py-3 font-bold transition ${
+                            theme === "dark"
+                                ? "border-white/10 bg-white/5 text-white/70 hover:bg-white/10"
+                                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
+                        }`}
+                    >
+                      {cancelButtonLabel}
+                    </button>
+
+                    <button
+                        type="button"
+                        onClick={() => void deleteFolder(folderToDelete)}
+                        className="rounded-2xl bg-red-500 px-5 py-3 font-bold text-white transition hover:bg-red-600"
+                    >
+                      {deleteFolderButtonLabel}
+                    </button>
+                  </div>
+                </div>
+              </div>
+          )}
+
           {notice && (
               <div className="fixed left-1/2 top-6 z-50 -translate-x-1/2">
                 <div
@@ -1310,7 +1703,6 @@ export default function NotesApp() {
                       onClick={() =>
                           createNote({
                             title: "Проектная заметка",
-                            tag: "Проекты",
                             folder: "Проекты",
                             color: "violet",
                           })
@@ -1331,10 +1723,16 @@ export default function NotesApp() {
                 onClick={() => setQuickMenuOpen(!quickMenuOpen)}
                 className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-cyan-400 via-violet-500 to-pink-500 text-3xl font-black text-white shadow-[0_0_35px_rgba(139,92,246,0.55)] transition hover:scale-105"
             >
-              {quickMenuOpen ? "×" : "+"}
+              {quickMenuOpen ? "?" : "+"}
             </button>
           </div>
         </div>
       </div>
   );
 }
+
+
+
+
+
+
